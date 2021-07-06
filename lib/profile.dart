@@ -192,6 +192,39 @@ class _ProfileState extends State<Profile> {
 
                                       ],
                                     ),
+                                Container(
+                                  child: SizedBox(
+                                    height: 34,
+                                    child:FloatingActionButton(
+                                      child: Icon(Icons.logout),
+                                      onPressed: () {
+                                        showDialog<String>(
+                                          context: context,
+                                          builder: (BuildContext context) => AlertDialog(
+                                            title:  Text('Logout'),
+                                            content:  Text('Are you sure to log out?'),
+                                            actions: <Widget>[
+
+                                              TextButton(
+                                                onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+                                                child: const Text('Yes'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(context),
+                                                child: const Text('No'),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+
+
+                                  ),
+                                  alignment: Alignment.centerRight,
+                                ),
+
+
                                   ],
                                 ),
                               )
