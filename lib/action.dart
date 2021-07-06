@@ -13,22 +13,56 @@ Future login(context,email,password) async {
     'Content-Type': 'application/json; charset=UTF-8',
   }, body: json);
   // print('Status code: ${response.statusCode}');
-  print(jsonDecode(response.body));
-  if(jsonDecode(response.body)[2] == email){
-    Navigator.push(
-        context, MaterialPageRoute(
-      builder: (context) => content(id: jsonDecode(response.body)[0],sendid: jsonDecode(response.body)[1],status: jsonDecode(response.body)[3]),
+  if(response.body == 'error'){
+    showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title:  Text('Login Failed'),
+        content:  Text('Please ensure your password and email are both correct'),
+        actions: <Widget>[
 
-    )
+          TextButton(
+            onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+            child: const Text('OK'),
+          ),
+
+        ],
+      ),
     );
-    // Navigator.push(
-    //     context, MaterialPageRoute(
-    //   builder: (context) => ChatPage(id: jsonDecode(response.body)[0],sendid: jsonDecode(response.body)[1],),
-    // )
-    // );
   }
+  else{
+    if(jsonDecode(response.body)[2] == email){
+      showDialog<String>(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title:  Text('User Name :${jsonDecode(response.body)[0]}'),
+          content:  Text('Login Successful'),
+          actions: <Widget>[
+
+            TextButton(
+              onPressed: () => Navigator.push(
+                  context, MaterialPageRoute(
+                builder: (context) => content(id: jsonDecode(response.body)[0],sendid: jsonDecode(response.body)[1],status: jsonDecode(response.body)[3]),
+
+              )
+              ),
+              child: const Text('OK'),
+            ),
+
+          ],
+        ),
+      );
+
+      // Navigator.push(
+      //     context, MaterialPageRoute(
+      //   builder: (context) => ChatPage(id: jsonDecode(response.body)[0],sendid: jsonDecode(response.body)[1],),
+      // )
+      // );
+    }
+  }
+
 }
-Future register(password,email,name) async {
+Future register(context,password,email,name) async {
   final url = Uri.parse(_localhostss());
   //Response response = await get(url);
   //print(response.body);
@@ -39,6 +73,21 @@ Future register(password,email,name) async {
   }, body: json);
   // print('Status code: ${response.statusCode}');
   print( response.body);
+  showDialog<String>(
+    context: context,
+    builder: (BuildContext context) => AlertDialog(
+      title:  Text('Register Successful'),
+      content:  Text('Go to login now'),
+      actions: <Widget>[
+
+        TextButton(
+          onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+          child: const Text('Go'),
+        ),
+
+      ],
+    ),
+  );
 }
 String _localhost() {
   if (Platform.isAndroid)
