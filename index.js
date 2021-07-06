@@ -3,6 +3,8 @@ const express = require('express')
 const moment = require('moment')
 const app = express()
 const port = 7878; //port for https
+var cors = require('cors')
+app.use(cors())
 
 app.use(
     express.urlencoded({
@@ -111,18 +113,23 @@ app.post('/login', (req, res) => {
         var whereStr = {"email":req.body.email, "password" : req.body.password};  // 查询条件
         dbo.collection("user").find(whereStr).toArray(function(err, result) {
             var data=[];
-            if (err) throw err;
-            console.log(result);
-            data.push(result[0].name,result[0].receiver,result[0].email,result[0].status)
-            res.send(data);
-            // var boardws = webSockets['01'] //check if there is reciever connection
-            // if (boardws){
-            //     var cdata = "{'cmd':'" + data.cmd + "','userid':'"+result[0].name+"', 'receiver':'"+result[0].receiver+"'}";
-            //     boardws.send(cdata); //send message to reciever
-            //     ws.send(data.cmd + ":success");
-            // }
-            db.close();
-            console.log(result[0].name+" Connected")
+            if (result.length ==0 ||err){
+                res.send('error')
+            }
+            else{
+                console.log(result);
+                data.push(result[0].name,result[0].receiver,result[0].email,result[0].status)
+                res.send(data);
+                // var boardws = webSockets['01'] //check if there is reciever connection
+                // if (boardws){
+                //     var cdata = "{'cmd':'" + data.cmd + "','userid':'"+result[0].name+"', 'receiver':'"+result[0].receiver+"'}";
+                //     boardws.send(cdata); //send message to reciever
+                //     ws.send(data.cmd + ":success");
+                // }
+                db.close();
+                console.log(result[0].name+" Connected")
+            }
+            
         });
     });
     console.log(req.body)
