@@ -4,6 +4,12 @@ const moment = require('moment')
 const app = express()
 const port = 7878; //port for https
 var cors = require('cors')
+
+
+// current date
+// adjust 0 before single digit date
+
+// current secondsdasasadsad
 app.use(cors())
 
 app.use(
@@ -151,12 +157,26 @@ wss.on('connection', function (ws, req)  {
 
     ws.on('message', message => { //if there is any message
         console.log(message);
+        let date_ob = new Date();
+        let day = ("0" + date_ob.getDay()).slice(-2);
+
+        // current year
+        let year = date_ob.getFullYear();
+
+        // current hours
+        let hours = ("0" + date_ob.getHours()).slice(-2);
+
+        // current minutes
+        let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
+        let minutes = ("0" + (date_ob.getMinutes() + 1)).slice(-2);
         var datastring = message.toString();
         if(datastring.charAt(0) == "{"){
             datastring = datastring.replace(/\'/g, '"');
             var data = JSON.parse(datastring)
             if(data.auth == "chatapphdfgjd34534hjdfk"){
                 if(data.cmd == 'send'){ 
+                    
+                    var datee= (year + "-" + month + "-" + day + " " + hours + ":" + minutes);
                     var boardws = webSockets[data.receiver] //check if there is reciever connection
                     var MongoClient = require('mongodb').MongoClient;
                         var url = "mongodb+srv://Hin:tony1007@cluster0.1a24r.mongodb.net/test";
@@ -164,7 +184,7 @@ wss.on('connection', function (ws, req)  {
                         MongoClient.connect(url, function(err, db) {
                             if (err) throw err;
                             var dbo = db.db("Hin");
-                            var myobj = { name: data.userid, receiver: data.receiver, message: data.msgtext };
+                            var myobj = { name: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee};
                             dbo.collection("message").insertOne(myobj, function(err, res) {
                                 if (err) throw err;
                                 console.log("文档插入成功");
