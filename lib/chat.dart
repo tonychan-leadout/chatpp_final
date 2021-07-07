@@ -26,8 +26,14 @@ class ChatPage extends StatefulWidget{
 class ChatPageState extends State<ChatPage>{
 
   late IOWebSocketChannel channel; //channel varaible for websocket
-  late bool connected; // boolean value to track connection status
-
+  late bool connected;
+  late bool istoday;// boolean value to track connection status
+  var now = DateTime.now();
+  var hour = DateTime.now().hour.toString();
+  var min = DateTime.now().minute.toString();
+  var month = DateTime.now().month.toString();
+  var day = DateTime.now().day.toString();
+  int hourr= DateTime.now().hour;
   // String myid = "111"; //my id
   // String recieverid = "222"; //reciever id
   // swap myid and recieverid value on another mobile to test send and recieve
@@ -74,6 +80,7 @@ class ChatPageState extends State<ChatPage>{
                   userid: jsondata["userid"],
                   isme: false,
                   sendid: jsondata["sendid"],
+                  time: jsondata["date"]
                 )
                 );
               });
@@ -102,11 +109,28 @@ class ChatPageState extends State<ChatPage>{
   }
 
   Future<void> sendmsg(String sendmsg, String id,String sendid) async {
+    var now = DateTime.now();
+    var hour = DateTime.now().hour.toString();
+    var min = DateTime.now().minute.toString();
+    var month = DateTime.now().month.toString();
+    var day = DateTime.now().day.toString();
+    int hourr= DateTime.now().hour;
     if(connected == true){
       String msg = "{'auth':'$auth','cmd':'send','userid':'$id', 'msgtext':'$sendmsg','receiver':'$sendid'}";
       setState(() {
+        if(min.length ==1){
+          min="0$min";
+        }
+        if(hour.length ==1){
+          hour="0$hour";
+        }
         msgtext.text = "";
-        msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid));
+        if(hourr >= 12){
+          msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ("$hour:${min} pm")));
+        }
+        else{
+          msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ("$hour:${min} am")));
+        }
       });
       channel.sink.add(msg); //send message to reciever channel
     }else{
@@ -126,14 +150,47 @@ class ChatPageState extends State<ChatPage>{
     List <dynamic>data= jsonDecode(response.body);
     print( jsonDecode(response.body)[0]);
     data.forEach((element) {
+      if(month.length==1){
+        month='0'+month;
+      }
+      if(day.length==1){
+        day='0'+day;
+      }
+
       if(element['name'] == widget.id){
         setState(() {
-          msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'])];
+          if(element['date'][11] == '0'){
+            print(element['date']);
+            msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"))];
+          }
+          else{
+            if(element['date'][12]=='1'){
+              msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"))];
+            }
+            else{
+              msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"))];
+            }
+
+          }
+
         });
       }
       else{
         setState(() {
-          msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'])];
+          if(element['date'][11] == '0'){
+            print(element['date']);
+            msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"))];
+          }
+          else{
+            if(element['date'][12]=='1'){
+              msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"))];
+            }
+            else{
+              msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"))];
+            }
+
+          }
+
         });
       }
     });
@@ -180,20 +237,7 @@ class ChatPageState extends State<ChatPage>{
           backgroundColor: Colors.deepPurple[600],
           actions: <Widget>[
             //FriendList(name: widget.id, status: 'status', sendid: 'sendid', id: 'id'),
-            SizedBox(
-              height: 30,
-              width: 40,
-              child: FloatingActionButton(
 
-                  child: Icon(Icons.arrow_back),
-                  backgroundColor: Colors.green,
-                  onPressed: () {
-                    Navigator.pushReplacementNamed(
-                      context, '/',
-                    );
-                  }
-              ),
-            )
           ],
         ),
         body: Container(
@@ -203,47 +247,109 @@ class ChatPageState extends State<ChatPage>{
                   child:Container(
                       padding: EdgeInsets.all(15),
                       child: SingleChildScrollView(
-                          child:Column(children: [
+                          child:Column(
+                            children: [
 
-                            /*Container(
-                              child:Text("Your Messages", style: TextStyle(fontSize: 20)),
-                            ),*/
+
 
                             Container(
                                 child: Column(
                                   children: msglist.map((onemsg){
-                                    return Container(
-                                        margin: EdgeInsets.only( //if is my message, then it has margin 40 at left
-                                          left: onemsg.isme?40:0,
-                                          right: onemsg.isme?0:40, //else margin at right
+                                   return Column(
+                                      children: [
+                                        Container(
+                                            margin: EdgeInsets.all(5),
+                                            padding: EdgeInsets.all(5),
+                                            height: 30,
+                                            width: 100,
+                                            decoration: BoxDecoration(
+                                                color: Colors.grey[400], borderRadius: BorderRadius.circular(20)),
+                                            child:
+                                            Column(
+                                              children: [
+
+                                                Text('Today'),
+                                              ],
+                                            )
                                         ),
-                                        child: Card(
-                                            color: onemsg.isme?Colors.deepPurple[700]:Colors.grey[700],
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(25),
-                                            ),
-                                            //if its my message then, blue background else red background
-                                            child: Container(
-                                              width: double.infinity,
-                                              padding: EdgeInsets.all(15),
+                                    Container(
+                                    margin: EdgeInsets.only( //if is my message, then it has margin 40 at left
+                                    left: onemsg.isme?40:0,
+                                    right: onemsg.isme?0:40, //else margin at right
+                                    ),
+                                    child: Card(
+                                    color: onemsg.isme?Colors.deepPurple[700]:Colors.grey[700],
+                                    shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25),
+                                    ),
+                                    //if its my message then, blue background else red background
+                                    child: Container(
+                                    width: double.infinity,
+                                    padding: EdgeInsets.all(15),
 
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
+                                    child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
 
-                                                  /*Container(
+                                    /*Container(
                                                       child:Text(onemsg.isme?"ID: ME":"ID: " + onemsg.userid)
                                                   ),*/
 
-                                                  Container(
-                                                    margin: EdgeInsets.only(top:10,bottom:10),
-                                                    child: Text( onemsg.msgtext, style: TextStyle(fontSize: 17,color: Colors.white)),
-                                                  ),
-
-                                                ],),
-                                            )
-                                        )
+                                    Container(
+                                    margin: EdgeInsets.only(top:10,bottom:10),
+                                    child: Text( onemsg.msgtext, style: TextStyle(fontSize: 17,color: Colors.white)),
+                                    ),
+                                    Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                    Spacer(),
+                                    Text(onemsg.time.substring(6,13),style: TextStyle(color: Colors.grey,),)
+                                    ],
+                                    )
+                                    ],),
+                                    )
+                                    )
+                                    ),
+                                      ],
                                     );
+                                    // return Container(
+                                    //     margin: EdgeInsets.only( //if is my message, then it has margin 40 at left
+                                    //       left: onemsg.isme?40:0,
+                                    //       right: onemsg.isme?0:40, //else margin at right
+                                    //     ),
+                                    //     child: Card(
+                                    //         color: onemsg.isme?Colors.deepPurple[700]:Colors.grey[700],
+                                    //         shape: RoundedRectangleBorder(
+                                    //           borderRadius: BorderRadius.circular(25),
+                                    //         ),
+                                    //         //if its my message then, blue background else red background
+                                    //         child: Container(
+                                    //           width: double.infinity,
+                                    //           padding: EdgeInsets.all(15),
+                                    //
+                                    //           child: Column(
+                                    //             crossAxisAlignment: CrossAxisAlignment.start,
+                                    //             children: [
+                                    //
+                                    //               /*Container(
+                                    //                   child:Text(onemsg.isme?"ID: ME":"ID: " + onemsg.userid)
+                                    //               ),*/
+                                    //
+                                    //               Container(
+                                    //                 margin: EdgeInsets.only(top:10,bottom:10),
+                                    //                 child: Text( onemsg.msgtext, style: TextStyle(fontSize: 17,color: Colors.white)),
+                                    //               ),
+                                    //               Row(
+                                    //                 crossAxisAlignment: CrossAxisAlignment.end,
+                                    //                 children: [
+                                    //                   Spacer(),
+                                    //                   Text(onemsg.time.substring(6,13),style: TextStyle(color: Colors.grey,),)
+                                    //                 ],
+                                    //               )
+                                    //             ],),
+                                    //         )
+                                    //     )
+                                    // );
                                   }).toList(),
                                 )
                             )
@@ -296,7 +402,9 @@ class ChatPageState extends State<ChatPage>{
 
 class MessageData{ //message data model
   String msgtext, userid,sendid;
+  String time;
   bool isme;
-  MessageData({required this.msgtext, required this.userid, required this.isme,required this.sendid});
+
+  MessageData({required this.msgtext, required this.userid, required this.isme,required this.sendid, required this.time});
 
 }
