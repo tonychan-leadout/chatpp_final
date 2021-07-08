@@ -158,7 +158,7 @@ wss.on('connection', function (ws, req)  {
     ws.on('message', message => { //if there is any message
         console.log(message);
         let date_ob = new Date();
-        let day = ("0" + date_ob.getDay()).slice(-2);
+        let day = ("0" + date_ob.getDate()).slice(-2);
 
         // current year
         let year = date_ob.getFullYear();
