@@ -34,6 +34,7 @@ class ChatPageState extends State<ChatPage>{
   var month = DateTime.now().month.toString();
   var day = DateTime.now().day.toString();
   int hourr= DateTime.now().hour;
+  late ScrollController _scrollController;
   // String myid = "111"; //my id
   // String recieverid = "222"; //reciever id
   // swap myid and recieverid value on another mobile to test send and recieve
@@ -42,19 +43,20 @@ class ChatPageState extends State<ChatPage>{
   List<MessageData> msglist = [];
 
   TextEditingController msgtext = TextEditingController();
-
   @override
   void initState() {
     connected = false;
     msgtext.text = "";
     getmymsg();
+    _scrollController = new ScrollController();
     channelconnect();
+
     super.initState();
   }
 
   channelconnect(){ //function to connect
     try{
-      channel = IOWebSocketChannel.connect("ws://192.168.1.26:6060/${widget.id}"); //channel IP : Port
+      channel = IOWebSocketChannel.connect("ws://192.168.0.137:6060/${widget.id}"); //channel IP : Port
       channel.stream.listen((message) {
         var timesss;
         int hourr= DateTime.now().hour;
@@ -276,7 +278,7 @@ class ChatPageState extends State<ChatPage>{
               msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: true,today: istoday)];
             }
             else
-              {
+            {
               msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: false,today: istoday)];
               // print(element['date']);
               // print('hi');
@@ -409,9 +411,9 @@ class ChatPageState extends State<ChatPage>{
   }
   String _localhostss() {
     if (Platform.isAndroid)
-      return 'http://192.168.1.26:7878/getmsg';
+      return 'http://192.168.0.137:7878/getmsg';
     else // for iOS simulator
-      return 'http://192.168.1.26:7878/getmsg';
+      return 'http://192.168.0.137:7878/getmsg';
   }
   /*Future getuser() async{
     final url=Uri.parse(_localhost());
@@ -425,6 +427,14 @@ class ChatPageState extends State<ChatPage>{
   }*/
   @override
   Widget build(BuildContext context) {
+
+    for (int i = 0; i < msglist.length; i++) {
+      if (i == msglist.length-1) {
+        _scrollController.jumpTo(i * 70, );
+        break;
+
+      }
+    }
     return Scaffold(
         appBar: AppBar(
           title:
@@ -458,6 +468,7 @@ class ChatPageState extends State<ChatPage>{
                   child:Container(
                       padding: EdgeInsets.all(15),
                       child: SingleChildScrollView(
+                          controller: _scrollController,
                           child:Column(
                             children: [
 
