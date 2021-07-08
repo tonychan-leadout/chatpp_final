@@ -54,8 +54,28 @@ class ChatPageState extends State<ChatPage>{
 
   channelconnect(){ //function to connect
     try{
-      channel = IOWebSocketChannel.connect("ws://192.168.0.137:6060/${widget.id}"); //channel IP : Port
+      channel = IOWebSocketChannel.connect("ws://192.168.1.26:6060/${widget.id}"); //channel IP : Port
       channel.stream.listen((message) {
+        var timesss;
+        int hourr= DateTime.now().hour;
+        if(min.length ==1){
+          min="0$min";
+        }
+        if(hour.length ==1){
+          hour="0$hour";
+        }
+        if(month.length ==1){
+          month="0$month";
+        }
+        if(day.length ==1){
+          day="0$day";
+        }
+        if(hourr >=12){
+          timesss='pm';
+        }
+        else{
+          timesss='am';
+        }
         print(message);
         setState(() {
           if(message == "connected"){
@@ -75,15 +95,31 @@ class ChatPageState extends State<ChatPage>{
             var jsondata = json.decode(message);
             if(jsondata["userid"] == widget.sendid){
               setState(() {
-                msglist.add(MessageData( //on message recieve, add data to model
+                if(msglist.length ==0){
+                  msglist.add(MessageData( //on message recieve, add data to model
                     msgtext: jsondata["msgtext"],
                     userid: jsondata["userid"],
                     isme: false,
                     sendid: jsondata["sendid"],
-                    time: jsondata["date"],
-                  istoday: true,
-                )
-                );
+                    time: ('$month-$day-$hour:${min}$timesss'),
+                    istoday: true,
+                    today: false,
+                  )
+                  );
+                }
+                else{
+                  msglist.add(MessageData( //on message recieve, add data to model
+                    msgtext: jsondata["msgtext"],
+                    userid: jsondata["userid"],
+                    isme: false,
+                    sendid: jsondata["sendid"],
+                    time: ('$month-$day-$hour:${min}$timesss'),
+                    istoday: true,
+                    today: true,
+                  )
+                  );
+                }
+
               });
 
             }
@@ -115,24 +151,80 @@ class ChatPageState extends State<ChatPage>{
     var min = DateTime.now().minute.toString();
     var month = DateTime.now().month.toString();
     var day = DateTime.now().day.toString();
-    int hourr= DateTime.now().hour;
+    int hourr= DateTime.now().hour.toInt();
     if(connected == true){
-      print(hourr);
+      print(hourr.runtimeType);
       String msg = "{'auth':'$auth','cmd':'send','userid':'$id', 'msgtext':'$sendmsg','receiver':'$sendid'}";
       setState(() {
+
         if(min.length ==1){
           min="0$min";
         }
         if(hour.length ==1){
           hour="0$hour";
         }
+        if(month.length ==1){
+          month="0$month";
+        }
+        if(day.length ==1){
+          day="0$day";
+        }
+        print('$month-$day-$hour:${min}am');
         msgtext.text = "";
-        if(hourr >= 12){
-          msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ("$hour:${min} pm"),istoday: true));
+
+        // if(hourr > 12){
+        //   msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ("$hour:${min} pm"),istoday: true,today: false));
+        // }
+        // else{
+        //   msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ("$hour:${min} am"),istoday: true,today: false));
+        // }
+        if(msglist.length ==0){
+          if(hour[0] == '0'){
+            msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ('$month-$day-$hour:${min}am'),istoday: true,today: false));
+          }
+          if(hour[0] == '2'){
+            msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ('$month-$day-$hour:${min}pm'),istoday: true,today: false));
+          }
+          if(hour[0] == '1'){
+            if(hour[1]== '1'||hour[1]== '0'){
+              msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ('$month-$day-$hour:${min}am'),istoday: true,today: false));
+            }
+            else{
+              msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ('$month-$day-$hour:${min}pm'),istoday: true,today: false));
+            }
+          }
         }
         else{
-          msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ("$hour:${min} am"),istoday: true));
+          if(hour[0] == '0'){
+            msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ('$month-$day-$hour:${min}am'),istoday: true,today: true));
+          }
+          if(hour[0] == '2'){
+            msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ('$month-$day-$hour:${min}pm'),istoday: true,today: true));
+          }
+          if(hour[0] == '1'){
+            if(hour[1]== '1'||hour[1]== '0'){
+              msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ('$month-$day-$hour:${min}am'),istoday: true,today: true));
+            }
+            else{
+              msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ('$month-$day-$hour:${min}pm'),istoday: true,today: true));
+            }
+          }
         }
+
+        // else{
+        //   if(hour[0] == '1'){
+        //     msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ("$hour:${min} am"),istoday: true,today: false));
+        //     // if(hour[1]== '1'||hour[1]== '0'){
+        //     //   msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ("$hour:${min} am"),istoday: true,today: false));
+        //     // }
+        //     // else{
+        //     //   msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ("$hour:${min} pm"),istoday: true,today: false));
+        //     // }
+        //   }
+        //   else{
+        //     msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ("$hour:${min} pm"),istoday: true,today: false));
+        //   }
+        // }
       });
       channel.sink.add(msg); //send message to reciever channel
     }else{
@@ -141,7 +233,9 @@ class ChatPageState extends State<ChatPage>{
     }
   }
   Future getmymsg() async {
+    int count=0;
 
+    late bool istoday;
     final url = Uri.parse(_localhostss());
     //Response response = await get(url);
     //print(response.body);
@@ -160,35 +254,81 @@ class ChatPageState extends State<ChatPage>{
       if(day.length==1){
         day='0'+day;
       }
-
+      if (count ==0){
+        istoday =false;
+        count=count+1;
+      }
+      else{
+        if (data[count]['date'].substring(5,10) == data[count-1]['date'].substring(5,10)){
+          istoday=true;
+          count=count+1;
+        }
+        else{
+          istoday=false;
+          count=count+1;
+        }
+      }
       if(element['name'] == widget.id){
         setState(() {
           if(element['date'][11] == '0'){
-            print(element['date']);
-            print(element['date'].toString().substring(5,11));
-            print("$month-$day");
-            if(element['date'].toString().substring(5,11) == ("$month-$day")){
-              msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: true)];
+
+            if((element['date'].substring(5,10)) == '$month-$day'){
+              msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: true,today: istoday)];
             }
-            else{
-              msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: false)];
+            else
+              {
+              msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: false,today: istoday)];
+              // print(element['date']);
+              // print('hi');
             }
           }
           else{
-              if(element['date'][12]=='1'){
-                if(element['date'].toString().substring(5,11) == ("$month-$day")){
-                msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: true)];
+            if(element['date'][12]=='1'){
+              if(element['date'].toString().substring(5,10) == ("$month-$day")){
+                if(element['date'][11] =='1'){
+                  msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: true,today: istoday)];
+                }
+                else{
+                  msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"),istoday: true,today: istoday)];
+                }
+
               }
               else{
-                msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"),istoday: true)];
+                if(element['date'][11] =='1'){
+                  msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: false,today: istoday)];
+                }
+                else{
+                  msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"),istoday: false,today: istoday)];
+                }
               }
             }
             else{
-                if(element['date'].toString().substring(5,11) == ("$month-$day")){
-                  msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"),istoday: true)];
+              if(element['date'].toString().substring(5,10) == ("$month-$day")){
+                if(element['date'][12] =='0'){
+                  if(element['date'][11]=='1'){
+                    msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: true,today: istoday)];
+                  }
+                  else{
+                    msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"),istoday: true,today: istoday)];
+                  }
                 }
+                else{
+                  msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"),istoday: true,today: istoday)];
+                }
+              }
               else{
-                msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"),istoday: false)];
+                if(element['date'][12] =='0'){
+                  if(element['date'][11]=='1'){
+                    msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: false,today: istoday)];
+                  }
+                  else{
+                    msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"),istoday: false,today: istoday)];
+                  }
+                }
+                else{
+                  msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"),istoday: false,today: istoday)];
+                }
+                print(element['date']);
               }
             }
 
@@ -198,35 +338,68 @@ class ChatPageState extends State<ChatPage>{
       }
       else{
         setState(() {
-          if(element['date'].toString().substring(5,11) == ("$month-$day")){
-            if(element['date'][11] == '0'){
-              print(element['date']);
-              msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: true)];
-            }
-            else{
-              if(element['date'][12]=='1'){
-                msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: true)];
-              }
-              else{
-                msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"),istoday: true)];
-              }
+          if(element['date'][11] == '0'){
 
+            if((element['date'].substring(5,10)) == '$month-$day'){
+              msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: true,today: istoday)];
+            }
+            else
+            {
+              msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: false,today: istoday)];
+              // print(element['date']);
+              // print('hi');
             }
           }
           else{
-            if(element['date'][11] == '0'){
-              print(element['date']);
-              msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: false)];
-            }
-            else{
-              if(element['date'][12]=='1'){
-                msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: false)];
+            if(element['date'][12]=='1'){
+              if(element['date'].toString().substring(5,10) == ("$month-$day")){
+                if(element['date'][11] =='1'){
+                  msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: true,today: istoday)];
+                }
+                else{
+                  msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"),istoday: true,today: istoday)];
+                }
+
               }
               else{
-                msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"),istoday: false)];
+                if(element['date'][11] =='1'){
+                  msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: false,today: istoday)];
+                }
+                else{
+                  msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"),istoday: false,today: istoday)];
+                }
               }
-
             }
+            else{
+              if(element['date'].toString().substring(5,10) == ("$month-$day")){
+                if(element['date'][12] =='0'){
+                  if(element['date'][11]=='1'){
+                    msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: true,today: istoday)];
+                  }
+                  else{
+                    msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"),istoday: true,today: istoday)];
+                  }
+                }
+                else{
+                  msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"),istoday: true,today: istoday)];
+                }
+              }
+              else{
+                if(element['date'][12] =='0'){
+                  if(element['date'][11]=='1'){
+                    msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}am"),istoday: false,today: istoday)];
+                  }
+                  else{
+                    msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"),istoday: false,today: istoday)];
+                  }
+                }
+                else{
+                  msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"),istoday: false,today: istoday)];
+                }
+                print(element['date']);
+              }
+            }
+
           }
 
         });
@@ -236,9 +409,9 @@ class ChatPageState extends State<ChatPage>{
   }
   String _localhostss() {
     if (Platform.isAndroid)
-      return 'http://192.168.0.137:7878/getmsg';
+      return 'http://192.168.1.26:7878/getmsg';
     else // for iOS simulator
-      return 'http://192.168.0.137:7878/getmsg';
+      return 'http://192.168.1.26:7878/getmsg';
   }
   /*Future getuser() async{
     final url=Uri.parse(_localhost());
@@ -295,20 +468,23 @@ class ChatPageState extends State<ChatPage>{
                                     children: msglist.map((onemsg){
                                       return Column(
                                         children: [
-                                          Container(
-                                              margin: EdgeInsets.all(5),
-                                              padding: EdgeInsets.all(5),
-                                              height: 30,
-                                              width: 100,
-                                              decoration: BoxDecoration(
-                                                  color: Colors.grey[400], borderRadius: BorderRadius.circular(20)),
-                                              child:
-                                              Column(
-                                                children: [
-                                                  Text(onemsg.istoday?('Today'):(onemsg.time.substring(0,5)))
-                                                ],
+                                          if(!onemsg.today)(
+                                              Container(
+                                                  margin: EdgeInsets.all(5),
+                                                  padding: EdgeInsets.all(5),
+                                                  height: 30,
+                                                  width: 100,
+                                                  decoration: BoxDecoration(
+                                                      color: Colors.grey[400], borderRadius: BorderRadius.circular(20)),
+                                                  child:
+                                                  Column(
+                                                    children: [
+                                                      Text(onemsg.istoday?('Today'):(onemsg.time.substring(0,5)))
+                                                    ],
+                                                  )
                                               )
                                           ),
+
                                           Container(
                                               margin: EdgeInsets.only( //if is my message, then it has margin 40 at left
                                                 left: onemsg.isme?40:0,
@@ -442,6 +618,7 @@ class MessageData{ //message data model
   String time;
   bool isme;
   bool istoday;
-  MessageData({required this.msgtext, required this.userid, required this.isme,required this.sendid, required this.time,required this.istoday});
+  bool today;
+  MessageData({required this.msgtext, required this.userid, required this.isme,required this.sendid, required this.time,required this.istoday,required this.today});
 
 }
