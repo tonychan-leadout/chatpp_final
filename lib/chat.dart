@@ -56,7 +56,7 @@ class ChatPageState extends State<ChatPage>{
 
   channelconnect(){ //function to connect
     try{
-      channel = IOWebSocketChannel.connect("ws://192.168.0.137:6060/${widget.id}"); //channel IP : Port
+      channel = IOWebSocketChannel.connect("ws://192.168.1.26:6060/${widget.id}"); //channel IP : Port
       channel.stream.listen((message) {
         var timesss;
         int hourr= DateTime.now().hour;
@@ -110,16 +110,31 @@ class ChatPageState extends State<ChatPage>{
                   );
                 }
                 else{
-                  msglist.add(MessageData( //on message recieve, add data to model
-                    msgtext: jsondata["msgtext"],
-                    userid: jsondata["userid"],
-                    isme: false,
-                    sendid: jsondata["sendid"],
-                    time: ('$month-$day-$hour:${min}$timesss'),
-                    istoday: true,
-                    today: true,
-                  )
-                  );
+                  if(msglist[msglist.length-1].time.substring(0,5)=='$month-$day'){
+                    msglist.add(MessageData( //on message recieve, add data to model
+                      msgtext: jsondata["msgtext"],
+                      userid: jsondata["userid"],
+                      isme: false,
+                      sendid: jsondata["sendid"],
+                      time: ('$month-$day-$hour:${min}$timesss'),
+                      istoday: true,
+                      today: true,
+                    )
+                    );
+                  }
+                  else{
+                    msglist.add(MessageData( //on message recieve, add data to model
+                      msgtext: jsondata["msgtext"],
+                      userid: jsondata["userid"],
+                      isme: false,
+                      sendid: jsondata["sendid"],
+                      time: ('$month-$day-$hour:${min}$timesss'),
+                      istoday: true,
+                      today: false,
+                    )
+                    );
+                  }
+
                 }
 
               });
@@ -197,19 +212,38 @@ class ChatPageState extends State<ChatPage>{
           }
         }
         else{
-          if(hour[0] == '0'){
-            msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ('$month-$day-$hour:${min}am'),istoday: true,today: true));
-          }
-          if(hour[0] == '2'){
-            msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ('$month-$day-$hour:${min}pm'),istoday: true,today: true));
-          }
-          if(hour[0] == '1'){
-            if(hour[1]== '1'||hour[1]== '0'){
+          if(msglist[msglist.length-1].time.substring(0,5)=='$month-$day'){
+            if(hour[0] == '0'){
               msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ('$month-$day-$hour:${min}am'),istoday: true,today: true));
             }
-            else{
+            if(hour[0] == '2'){
               msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ('$month-$day-$hour:${min}pm'),istoday: true,today: true));
             }
+            if(hour[0] == '1'){
+              if(hour[1]== '1'||hour[1]== '0'){
+                msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ('$month-$day-$hour:${min}am'),istoday: true,today: true));
+              }
+              else{
+                msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ('$month-$day-$hour:${min}pm'),istoday: true,today: true));
+              }
+            }
+          }
+          else{
+            if(hour[0] == '0'){
+              msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ('$month-$day-$hour:${min}am'),istoday: true,today: false));
+            }
+            if(hour[0] == '2'){
+              msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ('$month-$day-$hour:${min}pm'),istoday: true,today: false));
+            }
+            if(hour[0] == '1'){
+              if(hour[1]== '1'||hour[1]== '0'){
+                msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ('$month-$day-$hour:${min}am'),istoday: true,today: false));
+              }
+              else{
+                msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ('$month-$day-$hour:${min}pm'),istoday: true,today: false));
+              }
+            }
+          }
           }
         }
 
@@ -227,7 +261,7 @@ class ChatPageState extends State<ChatPage>{
         //     msglist.add(MessageData(msgtext: sendmsg, userid: widget.id, isme: true,sendid: widget.sendid, time: ("$hour:${min} pm"),istoday: true,today: false));
         //   }
         // }
-      });
+      );
       channel.sink.add(msg); //send message to reciever channel
     }else{
       channelconnect();
@@ -411,9 +445,9 @@ class ChatPageState extends State<ChatPage>{
   }
   String _localhostss() {
     if (Platform.isAndroid)
-      return 'http://192.168.0.137:7878/getmsg';
+      return 'http://192.168.1.26:7878/getmsg';
     else // for iOS simulator
-      return 'http://192.168.0.137:7878/getmsg';
+      return 'http://192.168.1.26:7878/getmsg';
   }
   /*Future getuser() async{
     final url=Uri.parse(_localhost());
