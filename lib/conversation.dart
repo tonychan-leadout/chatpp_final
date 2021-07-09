@@ -114,6 +114,14 @@ class _ChatPageState extends State<ChatPage> {
     //Response response = await get(url);
     //print(response.body);
     final json = '{"id":"${widget.id}"}';
+    var month = DateTime.now().month.toString();
+    var day = DateTime.now().day.toString();
+    if(month.length ==1){
+      month="0$month";
+    }
+    if(day.length ==1){
+      day="0$day";
+    }
     final response = await post(Uri.parse(_localhostss()), headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     }, body: json);
@@ -122,8 +130,8 @@ class _ChatPageState extends State<ChatPage> {
     print( jsonDecode(response.body));
     data.reversed.toList().forEach((element) {
       setState(() {
-        if (Friends.length ==0){
-          if(element['name'] == widget.id){
+        if(element['date'].substring(5,10)=='$month-$day'){
+          if(element['sender'] == widget.id){
             Friends = [...Friends, ChatUsers(name: element['receiver'], messageText: ('✓✓ ${element['message']}'), imageURL: 'imageURL', time: element['date'].substring(11,16))];
           }
           else{
@@ -131,25 +139,14 @@ class _ChatPageState extends State<ChatPage> {
           }
         }
         else{
-          int count=0;
-          Friends.forEach((item) {
-            if (element['name'] == item.name || element['receiver'] == item.name){
-              print('existed');
-            }
-            else{
-              count=count+1;
-              if(count == Friends.length){
-                if(element['name'] == widget.id){
-                  Friends = [...Friends, ChatUsers(name: element['receiver'], messageText: ('✓✓ ${element['message']}'), imageURL: 'imageURL', time: element['date'].substring(11,16))];
-                }
-                else{
-                  Friends = [...Friends, ChatUsers(name: element['name'], messageText: element['message'], imageURL: 'imageURL', time: element['date'].substring(11,16))];
-                }
-              }
-            }
-          });
-
+          if(element['sender'] == widget.id){
+            Friends = [...Friends, ChatUsers(name: element['receiver'], messageText: ('✓✓ ${element['message']}'), imageURL: 'imageURL', time: element['date'].substring(5,10))];
+          }
+          else{
+            Friends = [...Friends, ChatUsers(name: element['name'], messageText: element['message'], imageURL: 'imageURL', time: element['date'].substring(5,10))];
+          }
         }
+
       });
     });
     /*data.forEach((element) {
