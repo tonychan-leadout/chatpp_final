@@ -8,6 +8,7 @@ var cors = require('cors')
 
 // current date
 // adjust 0 before single digit date
+let date_ob = new Date();
 
 // current secondsdasasadsad
 app.use(cors())
@@ -47,9 +48,9 @@ app.post('/getuser', (req, res) => {
     MongoClient.connect(url, function(err, db) {
         if (err) throw err;
         var dbo = db.db("Hin");
-        var whereStr = {$or :[{"name":req.body.id},{"receiver":req.body.id}]}
+        var whereStr = {$or :[{"sender":req.body.id},{"receiver":req.body.id}]}
         //var whereStr = {"name":req.body.id,"receiver":req.body.receiver};  // 查询条件
-        dbo.collection("message").find(whereStr).toArray(function(err, result) {
+        dbo.collection("lastmessage").find(whereStr).toArray(function(err, result) {
             if (err) throw err;
             console.log(result);
             res.send(result);
@@ -159,11 +160,12 @@ wss.on('connection', function (ws, req)  {
         console.log(message);
         let date_ob = new Date();
         let day = ("0" + date_ob.getDate()).slice(-2);
-
+        console.log(date_ob);
         // current year
         let year = date_ob.getFullYear();
 
         // current hours
+        
         let hours = ("0" + date_ob.getHours()).slice(-2);
 
         // current minutes
@@ -191,6 +193,31 @@ wss.on('connection', function (ws, req)  {
                                 db.close();
                             });
                         });
+                        MongoClient.connect(url, function(err, db) {
+                            if (err) throw err;
+                            var dbo = db.db("Hin");
+                            var whereStr = {$or :[{"sender":data.userid,"receiver":data.receiver},{"sender":data.receiver,"receiver":data.userid}]}; 
+                            var myobj = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee}; 
+                            var updateStr = {$set: { "sender" : data.userid ,"receiver":data.receiver, "message" : data.msgtext, "date" :datee}};// 查询条件
+                            dbo.collection("lastmessage").find(whereStr).toArray(function(err, result) {
+                                if (result.length ==0 ||err){
+                                    dbo.collection("lastmessage").insertOne(myobj, function(err, res) {
+                                        if (err) throw err;
+                                        console.log("文档插入成功123");
+                                        db.close();
+                                    });
+                                }
+                                else{
+                                    dbo.collection("lastmessage").updateOne(whereStr, updateStr, function(err, res) {
+                                        if (err) throw err;
+                                        console.log("文档更新成功");
+                                        db.close();
+                                    });
+                                }
+                                
+                            });
+                        });
+
                     if (boardws){
                         var cdata = "{'cmd':'" + data.cmd + "','userid':'"+data.userid+"', 'sendid':'"+data.receiver+"','msgtext':'"+data.msgtext+"'}";
                         boardws.send(cdata); //send message to reciever
