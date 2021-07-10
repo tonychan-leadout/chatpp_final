@@ -3,7 +3,7 @@ const express = require('express')
 const moment = require('moment')
 const app = express()
 const port = 7878; //port for https
-var cors = require('cors')
+
 
 
 // current date
@@ -11,7 +11,7 @@ var cors = require('cors')
 let date_ob = new Date();
 
 // current secondsdasasadsad
-app.use(cors())
+
 
 app.use(
     express.urlencoded({
@@ -203,16 +203,36 @@ wss.on('connection', function (ws, req)  {
                                 if (result.length ==0 ||err){
                                     dbo.collection("lastmessage").insertOne(myobj, function(err, res) {
                                         if (err) throw err;
+                                        var cmdd='add';
                                         console.log("文档插入成功123");
+                                        if (boardws){
+                                            var cdata = "{'cmd':'" + cmdd + "','sendid':'"+data.userid+"','date':'"+datee+"', 'receiver':'"+data.receiver+"','msgtext':'"+data.msgtext+"'}";
+                                            boardws.send(cdata); //send message to reciever
+                                            ws.send(data.cmd + ":success");
+                                            
+                                        }
                                         db.close();
                                     });
                                 }
                                 else{
-                                    dbo.collection("lastmessage").updateOne(whereStr, updateStr, function(err, res) {
+                                    dbo.collection("lastmessage").deleteOne(whereStr, function(err, obj) {
                                         if (err) throw err;
-                                        console.log("文档更新成功");
+                                        console.log("文档删除成功");
                                         db.close();
                                     });
+                                    dbo.collection("lastmessage").insertOne(myobj, function(err, res) {
+                                        if (err) throw err;
+                                        var cmdd='update';
+                                        console.log("文档插入成功123");
+                                        if (boardws){
+                                            var cdata = "{'cmd':'" + cmdd + "','sendid':'"+data.userid+"','date':'"+datee+"', 'receiver':'"+data.receiver+"','msgtext':'"+data.msgtext+"'}";
+                                            boardws.send(cdata); //send message to reciever
+                                            ws.send(data.cmd + ":success");
+                                            
+                                        }
+                                        db.close();
+                                    });
+                    
                                 }
                                 
                             });
