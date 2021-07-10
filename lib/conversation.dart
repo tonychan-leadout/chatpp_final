@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'conversation_detail.dart';
 import 'dart:io';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
+import 'package:web_socket_channel/io.dart';
 import 'dart:convert';
 import 'package:http/http.dart' ;
 class friends{
@@ -28,10 +31,13 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   List<ChatUsers> Friends=[];
-
+  late IOWebSocketChannel channel; //channel varaible for websocket
+  late bool connected;
+  String auth = "chatapphdfgjd34534hjdfk";
   void initState() {
     super.initState();
     getmymsg();
+    channelconnect();
   }
   @override
   Widget build(BuildContext context) {
@@ -109,6 +115,75 @@ class _ChatPageState extends State<ChatPage> {
       ),
     );
   }
+  channelconnect(){ //function to connect
+    try{
+      channel = IOWebSocketChannel.connect("ws://192.168.0.137:6060/${widget.id}"); //channel IP : Port
+      channel.stream.listen((message) {
+        print(message);
+        setState(() {
+          if(message == "connected"){
+            connected = true;
+            setState(() { });
+            print("Connection establised.");
+          }
+          else if (message.substring(0, 6) == "{'cmd'") {
+            print("Message data");
+            message = message.replaceAll(RegExp("'"), '"');
+            var jsondata = json.decode(message);
+            if (jsondata['cmd'] == 'add'){
+              print('hi');
+              setState(() {
+                if(jsondata['sendid'] ==widget.id){
+                  Friends.insert(0, ChatUsers(name: jsondata['receiver'], messageText: ('✓✓ ${jsondata['msgtext']}'), imageURL: 'imageURL', time: jsondata['date'].substring(11,16)));
+                }
+                else{
+                  Friends.insert(0, ChatUsers(name: jsondata['sendid'], messageText: jsondata['msgtext'], imageURL: 'imageURL', time: jsondata['date'].substring(11,16)));
+                }
+              });
+            }
+            if(jsondata['cmd'] == 'update'){
+                Friends.forEach((element) {
+                    if (element.name == jsondata['sendid'] ) {
+                      setState(() {
+                        Friends.removeWhere((element) => element.name ==jsondata['sendid'] );
+                        if(jsondata['sendid'] ==widget.id){
+                          Friends.insert(0, ChatUsers(name: jsondata['receiver'], messageText: ('✓✓ ${jsondata['msgtext']}'), imageURL: 'imageURL', time: jsondata['date'].substring(11,16)));
+                        }
+                        else{
+                          Friends.insert(0, ChatUsers(name: jsondata['sendid'], messageText: jsondata['msgtext'], imageURL: 'imageURL', time: jsondata['date'].substring(11,16)));
+                        }
+                      });
+                    }
+                    if ( element.name == jsondata['receiver']) {
+                      setState(() {
+                        Friends.removeWhere((element) => element.name ==jsondata['receiver'] );
+                        if(jsondata['sendid'] ==widget.id){
+                          Friends.insert(0, ChatUsers(name: jsondata['receiver'], messageText: ('✓✓ ${jsondata['msgtext']}'), imageURL: 'imageURL', time: jsondata['date'].substring(11,16)));
+                        }
+                        else{
+                          Friends.insert(0, ChatUsers(name: jsondata['sendid'], messageText: jsondata['msgtext'], imageURL: 'imageURL', time: jsondata['date'].substring(11,16)));
+                        }
+                      });
+                    }
+              });
+            }
+          }
+        });
+      },
+        onDone: () {
+          //if WebSocket is disconnected
+          print("Web socket is closed");
+          setState(() {
+            connected = false;
+          });
+        },
+        onError: (error) {
+          print(error.toString());
+        },);
+    }catch (_){
+      print("error on connecting to websocket.");
+    }
+  }
   Future getmymsg() async {
     final url = Uri.parse(_localhostss());
     //Response response = await get(url);
@@ -135,7 +210,7 @@ class _ChatPageState extends State<ChatPage> {
             Friends = [...Friends, ChatUsers(name: element['receiver'], messageText: ('✓✓ ${element['message']}'), imageURL: 'imageURL', time: element['date'].substring(11,16))];
           }
           else{
-            Friends = [...Friends, ChatUsers(name: element['name'], messageText: element['message'], imageURL: 'imageURL', time: element['date'].substring(11,16))];
+            Friends = [...Friends, ChatUsers(name: element['sender'], messageText: element['message'], imageURL: 'imageURL', time: element['date'].substring(11,16))];
           }
         }
         else{
@@ -143,7 +218,7 @@ class _ChatPageState extends State<ChatPage> {
             Friends = [...Friends, ChatUsers(name: element['receiver'], messageText: ('✓✓ ${element['message']}'), imageURL: 'imageURL', time: element['date'].substring(5,10))];
           }
           else{
-            Friends = [...Friends, ChatUsers(name: element['name'], messageText: element['message'], imageURL: 'imageURL', time: element['date'].substring(5,10))];
+            Friends = [...Friends, ChatUsers(name: element['sender'], messageText: element['message'], imageURL: 'imageURL', time: element['date'].substring(5,10))];
           }
         }
 
@@ -159,8 +234,8 @@ class _ChatPageState extends State<ChatPage> {
   }
   String _localhostss() {
     if (Platform.isAndroid)
-      return 'http://192.168.1.26:7878/getuser';
+      return 'http://192.168.0.137:7878/getuser';
     else // for iOS simulator
-      return 'http://192.168.1.26:7878/getuser';
+      return 'http://192.168.0.137:7878/getuser';
   }
 }
