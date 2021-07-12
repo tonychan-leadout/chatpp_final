@@ -75,6 +75,35 @@ app.post('/getmsg', (req, res) => {
             db.close();
         });
     });
+    MongoClient.connect(url, function(err, db) {
+        if (err) throw err;
+        var dbo = db.db("Hin");
+        var whereStr = {$or :[{"sender":req.body.id,"receiver":req.body.receiver},{"sender":req.body.receiver,"receiver":req.body.id}]}
+        //var whereStr = {"name":req.body.id,"receiver":req.body.receiver};  // 查询条件
+        var updateStr = {$set: { "unread" : 0 }};
+        dbo.collection("lastmessage").updateOne(whereStr, updateStr, function(err, res) {
+            if (err) throw err;
+            console.log("文档更新成功1111");
+            db.close();
+        });
+    });
+    //res.send("dsds World");
+});
+app.post('/clean', (req, res) => {
+    var MongoClient = require('mongodb').MongoClient;
+    var url = "mongodb+srv://Hin:tony1007@cluster0.1a24r.mongodb.net/test";
+    MongoClient.connect(url, function(err, db) {
+        if (err) throw err;
+        var dbo = db.db("Hin");
+        var whereStr = {$or :[{"sender":req.body.id,"receiver":req.body.receiver},{"sender":req.body.receiver,"receiver":req.body.id}]}
+        //var whereStr = {"name":req.body.id,"receiver":req.body.receiver};  // 查询条件
+        var updateStr = {$set: { "unread" : 0 }};
+        dbo.collection("lastmessage").updateOne(whereStr, updateStr, function(err, res) {
+            if (err) throw err;
+            console.log("Cleaned");
+            db.close();
+        });
+    });
     //res.send("dsds World");
 });
 app.get('/get', (req, res) => {
@@ -197,7 +226,8 @@ wss.on('connection', function (ws, req)  {
                             if (err) throw err;
                             var dbo = db.db("Hin");
                             var whereStr = {$or :[{"sender":data.userid,"receiver":data.receiver},{"sender":data.receiver,"receiver":data.userid}]}; 
-                            var myobj = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee}; 
+                            var myobj = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:1}; 
+                            
                             var updateStr = {$set: { "sender" : data.userid ,"receiver":data.receiver, "message" : data.msgtext, "date" :datee}};// 查询条件
                             dbo.collection("lastmessage").find(whereStr).toArray(function(err, result) {
                                 if (result.length ==0 ||err){
@@ -215,12 +245,14 @@ wss.on('connection', function (ws, req)  {
                                     });
                                 }
                                 else{
+                                    console.log(result[0].unread);
                                     dbo.collection("lastmessage").deleteOne(whereStr, function(err, obj) {
                                         if (err) throw err;
                                         console.log("文档删除成功");
                                         db.close();
                                     });
-                                    dbo.collection("lastmessage").insertOne(myobj, function(err, res) {
+                                    var obj2 = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:result[0].unread+1}; 
+                                    dbo.collection("lastmessage").insertOne(obj2, function(err, res) {
                                         if (err) throw err;
                                         var cmdd='update';
                                         console.log("文档插入成功123");
