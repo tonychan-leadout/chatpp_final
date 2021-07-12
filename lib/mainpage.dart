@@ -6,9 +6,8 @@ import 'package:flutter/widgets.dart';
 import 'profile.dart';
 class content extends StatefulWidget {
   @override
-  content({ required this.id,required this.sendid, required this.status}) ;
+  content({ required this.id,required this.status}) ;
   final String id;
-  final String sendid;
   final String status;
   _contentState createState() => _contentState();
 }
@@ -17,8 +16,8 @@ class _contentState extends State<content> {
   int _selectedIndex = 0;
 
   List<Widget> _widgetOptions() =>[
-    ChatPage(id: widget.id),
-    Friend(id: widget.id,sendid: widget.sendid,),
+    New(id: widget.id),
+    Friend(id: widget.id),
     Profile(name: widget.id,status:widget.status),
   ];
   void _onItemTapped(int index) {
