@@ -5,7 +5,7 @@ class ConversationList extends StatefulWidget{
   String id;
   String name;
   String messageText;
-  String imageUrl;
+  int imageUrl;
   String time;
   bool isMessageRead;
   ConversationList({required this.id,required this.name,required this.messageText,required this.imageUrl,required this.time,required this.isMessageRead});
@@ -33,9 +33,14 @@ class _ConversationListState extends State<ConversationList> {
             Expanded(
               child: Row(
                 children: <Widget>[
-                  CircleAvatar(
-                    backgroundImage: ExactAssetImage('images/user.png'),
-                    maxRadius: 30,
+                  Column(
+                    children: [
+
+                      CircleAvatar(
+                        backgroundImage: ExactAssetImage('images/user.png'),
+                        maxRadius: 30,
+                      ),
+                    ],
                   ),
                   SizedBox(width: 16,),
                   Expanded(
@@ -59,9 +64,29 @@ class _ConversationListState extends State<ConversationList> {
                 ],
               ),
             ),
-            Text(widget.time, style: TextStyle(fontSize: 12,
-                fontWeight: widget.isMessageRead ? FontWeight.bold : FontWeight
-                    .normal),),
+            Column(
+              children: [
+                Text(widget.time, style: TextStyle(fontSize: 12,
+                    fontWeight: widget.imageUrl >0 ? FontWeight.bold : FontWeight
+                        .normal),),
+                SizedBox(
+                  height: 10,
+                ),
+                if(widget.imageUrl >0)
+                Container(
+                  padding: EdgeInsets.only(left: 8,right: 8,top: 2,bottom: 2),
+                  height: 20,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(50),
+                    color: Colors.greenAccent,
+                  ),
+                  child: Text(widget.imageUrl.toString(), style: TextStyle(fontSize: 12,
+                      fontWeight: widget.isMessageRead ? FontWeight.bold : FontWeight
+                          .normal),),
+                )
+
+              ],
+            )
           ],
         ),
       ),
