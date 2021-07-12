@@ -16,23 +16,24 @@ class friends{
 class ChatUsers{
   String name;
   String messageText;
-  String imageURL;
+  int imageURL;
   String time;
   ChatUsers({required this.name,required this.messageText,required this.imageURL,required this.time});
 }
 
-class ChatPage extends StatefulWidget {
-  ChatPage({ required this.id}) ;
+class New extends StatefulWidget {
+  New({ required this.id}) ;
   final String id;
   List<friends> Friends=[];
   @override
   _ChatPageState createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
+class _ChatPageState extends State<New> {
   List<ChatUsers> Friends=[];
   late IOWebSocketChannel channel; //channel varaible for websocket
   late bool connected;
+  int counter=0;
   String auth = "chatapphdfgjd34534hjdfk";
   void initState() {
     super.initState();
@@ -134,35 +135,40 @@ class _ChatPageState extends State<ChatPage> {
               print('hi');
               setState(() {
                 if(jsondata['sendid'] ==widget.id){
-                  Friends.insert(0, ChatUsers(name: jsondata['receiver'], messageText: ('✓✓ ${jsondata['msgtext']}'), imageURL: 'imageURL', time: jsondata['date'].substring(11,16)));
+                  Friends.insert(0, ChatUsers(name: jsondata['receiver'], messageText: ('✓✓ ${jsondata['msgtext']}'), imageURL: 0, time: jsondata['date'].substring(11,16)));
                 }
                 else{
-                  Friends.insert(0, ChatUsers(name: jsondata['sendid'], messageText: jsondata['msgtext'], imageURL: 'imageURL', time: jsondata['date'].substring(11,16)));
+                  Friends.insert(0, ChatUsers(name: jsondata['sendid'], messageText: jsondata['msgtext'], imageURL: 0, time: jsondata['date'].substring(11,16)));
                 }
+                Friends[0].imageURL=Friends[0].imageURL+1;
               });
             }
             if(jsondata['cmd'] == 'update'){
                 Friends.forEach((element) {
                     if (element.name == jsondata['sendid'] ) {
                       setState(() {
+                        int count=element.imageURL;
                         Friends.removeWhere((element) => element.name ==jsondata['sendid'] );
                         if(jsondata['sendid'] ==widget.id){
-                          Friends.insert(0, ChatUsers(name: jsondata['receiver'], messageText: ('✓✓ ${jsondata['msgtext']}'), imageURL: 'imageURL', time: jsondata['date'].substring(11,16)));
+                          Friends.insert(0, ChatUsers(name: jsondata['receiver'], messageText: ('✓✓ ${jsondata['msgtext']}'), imageURL: count+1, time: jsondata['date'].substring(11,16)));
                         }
                         else{
-                          Friends.insert(0, ChatUsers(name: jsondata['sendid'], messageText: jsondata['msgtext'], imageURL: 'imageURL', time: jsondata['date'].substring(11,16)));
+                          Friends.insert(0, ChatUsers(name: jsondata['sendid'], messageText: jsondata['msgtext'], imageURL: count+1, time: jsondata['date'].substring(11,16)));
                         }
+
                       });
                     }
                     if ( element.name == jsondata['receiver']) {
+                      int count=element.imageURL;
                       setState(() {
                         Friends.removeWhere((element) => element.name ==jsondata['receiver'] );
                         if(jsondata['sendid'] ==widget.id){
-                          Friends.insert(0, ChatUsers(name: jsondata['receiver'], messageText: ('✓✓ ${jsondata['msgtext']}'), imageURL: 'imageURL', time: jsondata['date'].substring(11,16)));
+                          Friends.insert(0, ChatUsers(name: jsondata['receiver'], messageText: ('✓✓ ${jsondata['msgtext']}'), imageURL: count+1, time: jsondata['date'].substring(11,16)));
                         }
                         else{
-                          Friends.insert(0, ChatUsers(name: jsondata['sendid'], messageText: jsondata['msgtext'], imageURL: 'imageURL', time: jsondata['date'].substring(11,16)));
+                          Friends.insert(0, ChatUsers(name: jsondata['sendid'], messageText: jsondata['msgtext'], imageURL: count+1, time: jsondata['date'].substring(11,16)));
                         }
+                        counter=counter+1;
                       });
                     }
               });
@@ -207,18 +213,18 @@ class _ChatPageState extends State<ChatPage> {
       setState(() {
         if(element['date'].substring(5,10)=='$month-$day'){
           if(element['sender'] == widget.id){
-            Friends = [...Friends, ChatUsers(name: element['receiver'], messageText: ('✓✓ ${element['message']}'), imageURL: 'imageURL', time: element['date'].substring(11,16))];
+            Friends = [...Friends, ChatUsers(name: element['receiver'], messageText: ('✓✓ ${element['message']}'), imageURL: 0, time: element['date'].substring(11,16))];
           }
           else{
-            Friends = [...Friends, ChatUsers(name: element['sender'], messageText: element['message'], imageURL: 'imageURL', time: element['date'].substring(11,16))];
+            Friends = [...Friends, ChatUsers(name: element['sender'], messageText: element['message'], imageURL: element['unread'], time: element['date'].substring(11,16))];
           }
         }
         else{
           if(element['sender'] == widget.id){
-            Friends = [...Friends, ChatUsers(name: element['receiver'], messageText: ('✓✓ ${element['message']}'), imageURL: 'imageURL', time: element['date'].substring(5,10))];
+            Friends = [...Friends, ChatUsers(name: element['receiver'], messageText: ('✓✓ ${element['message']}'), imageURL: 0, time: element['date'].substring(5,10))];
           }
           else{
-            Friends = [...Friends, ChatUsers(name: element['sender'], messageText: element['message'], imageURL: 'imageURL', time: element['date'].substring(5,10))];
+            Friends = [...Friends, ChatUsers(name: element['sender'], messageText: element['message'], imageURL: element['unread'], time: element['date'].substring(5,10))];
           }
         }
 
