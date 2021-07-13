@@ -225,8 +225,14 @@ wss.on('connection', function (ws, req)  {
                         MongoClient.connect(url, function(err, db) {
                             if (err) throw err;
                             var dbo = db.db("Hin");
-                            var whereStr = {$or :[{"sender":data.userid,"receiver":data.receiver},{"sender":data.receiver,"receiver":data.userid}]}; 
-                            var myobj = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:1}; 
+                            var whereStr = {$or :[{"sender":data.userid,"receiver":data.receiver},{"sender":data.receiver,"receiver":data.userid}]};
+                            if (boardws){
+                                var myobj = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:0}; 
+                            }
+                            else{
+                                var myobj = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:1}; 
+                            }
+                            
                             
                             var updateStr = {$set: { "sender" : data.userid ,"receiver":data.receiver, "message" : data.msgtext, "date" :datee}};// 查询条件
                             dbo.collection("lastmessage").find(whereStr).toArray(function(err, result) {
@@ -239,7 +245,7 @@ wss.on('connection', function (ws, req)  {
                                             var cdata = "{'cmd':'" + cmdd + "','sendid':'"+data.userid+"','date':'"+datee+"', 'receiver':'"+data.receiver+"','msgtext':'"+data.msgtext+"'}";
                                             boardws.send(cdata); //send message to reciever
                                             ws.send(data.cmd + ":success");
-                                            
+          
                                         }
                                         db.close();
                                     });
@@ -251,7 +257,13 @@ wss.on('connection', function (ws, req)  {
                                         console.log("文档删除成功");
                                         db.close();
                                     });
-                                    var obj2 = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:result[0].unread+1}; 
+                                    var obj2 = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:0}; 
+                                    if (boardws){
+                                         obj2 = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:0}; 
+                                    }
+                                    else{
+                                         obj2 = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:result[0].unread+1}; 
+                                    }
                                     dbo.collection("lastmessage").insertOne(obj2, function(err, res) {
                                         if (err) throw err;
                                         var cmdd='update';
