@@ -15,16 +15,17 @@ import 'friend_detail.dart';
 
 class ChatPage extends StatefulWidget{
   @override
-  ChatPage({ required this.id,required this.sendid}) ;
+  ChatPage({ required this.id,required this.sendid,required this.unread}) ;
   final String id;
   final String sendid;
+  final int unread;
   State<StatefulWidget> createState() {
     return ChatPageState();
   }
 }
 
 class ChatPageState extends State<ChatPage>{
-
+  int count=0;
   late IOWebSocketChannel channel; //channel varaible for websocket
   late bool connected;
   late bool istoday;// boolean value to track connection status
@@ -53,11 +54,7 @@ class ChatPageState extends State<ChatPage>{
 
     super.initState();
   }
-  void dispose(){
-    print('clean');
-    clean();
-    super.dispose();
-  }
+
   channelconnect(){ //function to connect
     try{
       channel = IOWebSocketChannel.connect("ws://192.168.0.137:6060/${widget.id}"); //channel IP : Port
@@ -546,8 +543,24 @@ class ChatPageState extends State<ChatPage>{
                               Container(
                                   child: Column(
                                     children: msglist.map((onemsg){
+                                      count=count+1;
                                       return Column(
                                         children: [
+                                          if(count == msglist.length-widget.unread && widget.unread !=0)
+                                            Container(
+                                                margin: EdgeInsets.all(5),
+                                                padding: EdgeInsets.all(5),
+                                                height: 30,
+                                                width: 100,
+                                                decoration: BoxDecoration(
+                                                    color: Colors.grey[400], borderRadius: BorderRadius.circular(20)),
+                                                child:
+                                                Column(
+                                                  children: [
+                                                    Text(widget.unread.toString())
+                                                  ],
+                                                )
+                                            ),
                                           if(!onemsg.today)(
                                               Container(
                                                   margin: EdgeInsets.all(5),
@@ -564,7 +577,6 @@ class ChatPageState extends State<ChatPage>{
                                                   )
                                               )
                                           ),
-
                                           Container(
                                               margin: EdgeInsets.only( //if is my message, then it has margin 40 at left
                                                 left: onemsg.isme?40:0,
