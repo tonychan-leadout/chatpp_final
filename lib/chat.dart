@@ -12,6 +12,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' ;
 import 'friend_detail.dart';
+import 'package:persian_number_utility/persian_number_utility.dart';
 
 class ChatPage extends StatefulWidget{
   @override
@@ -57,7 +58,7 @@ class ChatPageState extends State<ChatPage>{
 
   channelconnect(){ //function to connect
     try{
-      channel = IOWebSocketChannel.connect("ws://192.168.0.137:6060/${widget.id}"); //channel IP : Port
+      channel = IOWebSocketChannel.connect("ws://192.168.1.26:6060/${widget.id}"); //channel IP : Port
       channel.stream.listen((message) {
         var timesss;
         int hourr= DateTime.now().hour;
@@ -100,33 +101,6 @@ class ChatPageState extends State<ChatPage>{
               setState(() {
                 if(msglist.length ==0){
                   msglist.add(MessageData( //on message recieve, add data to model
-                    msgtext: jsondata["msgtext"],
-                    userid: jsondata["userid"],
-                    isme: false,
-                    sendid: jsondata["sendid"],
-                    time: ('$month-$day-$hour:${min}$timesss'),
-                    istoday: true,
-                    today: false,
-                      ismessageread: false
-                  )
-                  );
-                }
-                else{
-                  if(msglist[msglist.length-1].time.substring(0,5)=='$month-$day'){
-                    msglist.add(MessageData( //on message recieve, add data to model
-                      msgtext: jsondata["msgtext"],
-                      userid: jsondata["userid"],
-                      isme: false,
-                      sendid: jsondata["sendid"],
-                      time: ('$month-$day-$hour:${min}$timesss'),
-                      istoday: true,
-                      today: true,
-                        ismessageread: false
-                    )
-                    );
-                  }
-                  else{
-                    msglist.add(MessageData( //on message recieve, add data to model
                       msgtext: jsondata["msgtext"],
                       userid: jsondata["userid"],
                       isme: false,
@@ -134,6 +108,33 @@ class ChatPageState extends State<ChatPage>{
                       time: ('$month-$day-$hour:${min}$timesss'),
                       istoday: true,
                       today: false,
+                      ismessageread: false
+                  )
+                  );
+                }
+                else{
+                  if(msglist[msglist.length-1].time.substring(0,5)=='$month-$day'){
+                    msglist.add(MessageData( //on message recieve, add data to model
+                        msgtext: jsondata["msgtext"],
+                        userid: jsondata["userid"],
+                        isme: false,
+                        sendid: jsondata["sendid"],
+                        time: ('$month-$day-$hour:${min}$timesss'),
+                        istoday: true,
+                        today: true,
+                        ismessageread: false
+                    )
+                    );
+                  }
+                  else{
+                    msglist.add(MessageData( //on message recieve, add data to model
+                        msgtext: jsondata["msgtext"],
+                        userid: jsondata["userid"],
+                        isme: false,
+                        sendid: jsondata["sendid"],
+                        time: ('$month-$day-$hour:${min}$timesss'),
+                        istoday: true,
+                        today: false,
                         ismessageread: false
                     )
                     );
@@ -455,15 +456,15 @@ class ChatPageState extends State<ChatPage>{
   }
   String _localhostss() {
     if (Platform.isAndroid)
-      return 'http://192.168.0.137:7878/getmsg';
+      return 'http://192.168.1.26:7878/getmsg';
     else // for iOS simulator
-      return 'http://192.168.0.137:7878/getmsg';
+      return 'http://192.168.1.26:7878/getmsg';
   }
   String _localhost() {
     if (Platform.isAndroid)
-      return 'http://192.168.0.137:7878/clean';
+      return 'http://192.168.1.26:7878/clean';
     else // for iOS simulator
-      return 'http://192.168.0.137:7878/clean';
+      return 'http://192.168.1.26:7878/clean';
   }
   /*Future getuser() async{
     final url=Uri.parse(_localhost());
@@ -509,7 +510,6 @@ class ChatPageState extends State<ChatPage>{
               /*Navigator.push(
                   context, MaterialPageRoute(
                 builder: (context) => New(id:widget.id ),
-
               )
               );*/
               Navigator.pushReplacement(
@@ -546,18 +546,19 @@ class ChatPageState extends State<ChatPage>{
                                       count=count+1;
                                       return Column(
                                         children: [
-                                          if(count == msglist.length-widget.unread && widget.unread !=0)
+                                          if(count == msglist.length-widget.unread+1 && widget.unread !=0)
                                             Container(
                                                 margin: EdgeInsets.all(5),
                                                 padding: EdgeInsets.all(5),
                                                 height: 30,
-                                                width: 100,
+                                                width: 200,
                                                 decoration: BoxDecoration(
                                                     color: Colors.grey[400], borderRadius: BorderRadius.circular(20)),
                                                 child:
                                                 Column(
                                                   children: [
-                                                    Text(widget.unread.toString())
+                                                    Text("${widget.unread.toString().toWord(
+                                                lang: NumStrLanguage.English)} unread messages")
                                                   ],
                                                 )
                                             ),
