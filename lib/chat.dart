@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'mainpage.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -375,7 +376,7 @@ class ChatPageState extends State<ChatPage>{
                 else{
                   msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: true, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"),istoday: false,today: istoday,ismessageread: false)];
                 }
-                print(element['date']);
+                // print(element['date']);
               }
             }
 
@@ -443,7 +444,7 @@ class ChatPageState extends State<ChatPage>{
                 else{
                   msglist=[...msglist,MessageData(msgtext: element['message'], userid: element['name'], isme: false, sendid: element['receiver'],time: ("${(element['date']).substring(5,16)}pm"),istoday: false,today: istoday,ismessageread: false)];
                 }
-                print(element['date']);
+                // print(element['date']);
               }
             }
 
@@ -478,20 +479,20 @@ class ChatPageState extends State<ChatPage>{
   }*/
   @override
   Widget build(BuildContext context) {
-
-    for (int i = 0; i < msglist.length; i++) {
-      if (i == msglist.length-1) {
-        _scrollController.jumpTo(i * 85 );
-        break;
-
-      }
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
     }
+    else{
+      Timer(Duration(milliseconds: 680), () {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      });
+    }
+
     return Scaffold(
         appBar: AppBar(
           title:
           Row(
             children: <Widget>[
-
               CircleAvatar(
                 backgroundImage: ExactAssetImage('images/user.png'),
                 maxRadius: 20,
@@ -527,8 +528,10 @@ class ChatPageState extends State<ChatPage>{
 
           ],
         ),
-        body: Container(
+        body:
+        Container(
             child: Stack(children: [
+
               Positioned(
                   top:0,bottom:70,left:0, right:0,
                   child:Container(
@@ -537,9 +540,6 @@ class ChatPageState extends State<ChatPage>{
                           controller: _scrollController,
                           child:Column(
                             children: [
-
-
-
                               Container(
                                   child: Column(
                                     children: msglist.map((onemsg){
@@ -704,6 +704,7 @@ class ChatPageState extends State<ChatPage>{
         )
     );
   }
+
 }
 
 class MessageData{ //message data model
