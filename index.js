@@ -292,6 +292,50 @@ wss.on('connection', function (ws, req)  {
             datastring = datastring.replace(/\'/g, '"');
             var data = JSON.parse(datastring)
             if(data.auth == "chatapphdfgjd34534hjdfk"){
+                if(data.cmd == 'groupsend'){ 
+                    var datee= (year + "-" + month + "-" + day + " " + hours + ":" + minutes);
+                    var MongoClient = require('mongodb').MongoClient;
+                    var url = "mongodb+srv://Hin:tony1007@cluster0.1a24r.mongodb.net/test";  
+                    MongoClient.connect(url, function(err, db) {
+                        if (err) throw err;
+                        var dbo = db.db("Hin");
+                        var whereStr = {"groupname":data.receiver};  // 查询条件
+                        dbo.collection("Group").find(whereStr).toArray(function(err, result) {
+                           console.log(result[0].member);
+                        result[0].member.forEach(element => {
+                            if (element != data.userid){
+                                boardws=webSockets[element];
+                                if(boardws){
+                                    var cdata = "{'cmd':'" + data.cmd + "','userid':'"+data.userid+"', 'sendid':'"+data.receiver+"','msgtext':'"+data.msgtext+"'}";
+                                    boardws.send(cdata); //send message to reciever
+                                    ws.send(data.cmd + ":success");
+                                }
+                                else{
+                                    console.log("receiver offline");
+                                    ws.send(data.cmd + ":error");
+                                }
+                            }
+                            
+                        });
+                        });
+                    }); //check if there is reciever connection
+                    var MongoClient = require('mongodb').MongoClient;
+                        var url = "mongodb+srv://Hin:tony1007@cluster0.1a24r.mongodb.net/test";
+                    
+                        MongoClient.connect(url, function(err, db) {
+                            if (err) throw err;
+                            var dbo = db.db("Hin");
+                            var myobj = { name: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee};
+                            dbo.collection("message").insertOne(myobj, function(err, res) {
+                                if (err) throw err;
+                                console.log("文档插入成功");
+                                db.close();
+                            });
+                        });
+                       
+
+                  
+                }
                 if(data.cmd == 'send'){ 
                     
                     var datee= (year + "-" + month + "-" + day + " " + hours + ":" + minutes);
