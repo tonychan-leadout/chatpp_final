@@ -34,7 +34,7 @@ app.post('/getstatus', (req, res) => {
         //var whereStr = {"name":req.body.id,"receiver":req.body.receiver};  // 查询条件
         dbo.collection("user").find(whereStr).toArray(function(err, result) {
             if (err) throw err;
-            console.log(result);
+           
             res.send(result);
             db.close();
         });
@@ -52,8 +52,38 @@ app.post('/getuser', (req, res) => {
         //var whereStr = {"name":req.body.id,"receiver":req.body.receiver};  // 查询条件
         dbo.collection("lastmessage").find(whereStr).toArray(function(err, result) {
             if (err) throw err;
-            console.log(result);
+            
             res.send(result);
+            db.close();
+        });
+    });
+    //res.send("dsds World");
+});
+app.post('/getgroupmsg', (req, res) => {
+    var MongoClient = require('mongodb').MongoClient;
+    var url = "mongodb+srv://Hin:tony1007@cluster0.1a24r.mongodb.net/test";
+    
+    MongoClient.connect(url, function(err, db) {
+        if (err) throw err;
+        var dbo = db.db("Hin");
+        var whereStr = {$or :[{"name":req.body.receiver},{"receiver":req.body.receiver}]}
+        //var whereStr = {"name":req.body.id,"receiver":req.body.receiver};  // 查询条件
+        dbo.collection("message").find(whereStr).toArray(function(err, result) {
+            if (err) throw err;
+            
+            res.send(result);
+            db.close();
+        });
+    });
+    MongoClient.connect(url, function(err, db) {
+        if (err) throw err;
+        var dbo = db.db("Hin");
+        var whereStr = {$or :[{"receiver":req.body.receiver}]}
+        //var whereStr = {"name":req.body.id,"receiver":req.body.receiver};  // 查询条件
+        var updateStr = {$set: { "unread" : 0 }};
+        dbo.collection("lastmessage").updateOne(whereStr, updateStr, function(err, res) {
+            if (err) throw err;
+            console.log("文档更新成功1111");
             db.close();
         });
     });
@@ -70,7 +100,7 @@ app.post('/getmsg', (req, res) => {
         //var whereStr = {"name":req.body.id,"receiver":req.body.receiver};  // 查询条件
         dbo.collection("message").find(whereStr).toArray(function(err, result) {
             if (err) throw err;
-            console.log(result);
+            
             res.send(result);
             db.close();
         });
@@ -116,12 +146,69 @@ app.get('/get', (req, res) => {
         var whereStr = {"status":'Hello i am use chat'};  // 查询条件
         dbo.collection("user").find({}).toArray(function(err, result) {
             if (err) throw err;
-            console.log(result);
+           
             res.send(result);
             db.close();
         });
     });
     //res.send("dsds World");
+});
+app.get('/getgroup', (req, res) => {
+    var MongoClient = require('mongodb').MongoClient;
+    var url = "mongodb+srv://Hin:tony1007@cluster0.1a24r.mongodb.net/test";
+    
+    MongoClient.connect(url, function(err, db) {
+        if (err) throw err;
+        var dbo = db.db("Hin");
+        var whereStr = {};  // 查询条件
+        dbo.collection("Group") .find({}).toArray(function(err, result) {
+            if (err) throw err;
+            
+            res.send(result);
+            db.close();
+        });
+    });
+    //res.send("dsds World");
+});
+app.post('/group', (req, res) => {
+    var MongoClient = require('mongodb').MongoClient;
+    var url = "mongodb+srv://Hin:tony1007@cluster0.1a24r.mongodb.net/test";
+    let date_ob = new Date();
+    let day = ("0" + date_ob.getDate()).slice(-2);
+    console.log(date_ob);
+    // current year
+    let year = date_ob.getFullYear();
+
+    // current hours
+    
+    let hours = ("0" + date_ob.getHours()).slice(-2);
+
+    // current minutes
+    let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
+    let minutes = ("0" + (date_ob.getMinutes() + 1)).slice(-2);    
+    var datee= (year + "-" + month + "-" + day + " " + hours + ":" + minutes);            
+    MongoClient.connect(url, function(err, db) {
+        if (err) throw err;
+        var dbo = db.db("Hin");
+        var myobj = { name: req.body.creator, member:req.body.member,lastemessage:('The group is created by '+req.body.creator),time:datee,groupname:req.body.groupname};
+        dbo.collection("Group").insertOne(myobj, function(err, res) {
+            if (err) throw err;
+            console.log("文档插入成功");
+            db.close();
+        });
+    });
+    // MongoClient.connect(url, function(err, db) {
+    //     if (err) throw err;
+    //     var dbo = db.db("Hin");
+    //     var myobj = { name: req.body.name, receiver: data.receiver, message: data.msgtext ,date:datee};
+    //     dbo.collection("message").insertOne(myobj, function(err, res) {
+    //         if (err) throw err;
+    //         console.log("文档插入成功");
+    //         db.close();
+    //     });
+    // });
+
+    res.send("group register successful");
 });
 app.post('/register', (req, res) => {
     var MongoClient = require('mongodb').MongoClient;
@@ -153,7 +240,7 @@ app.post('/login', (req, res) => {
                 res.send('error')
             }
             else{
-                console.log(result);
+                
                 data.push(result[0].name,result[0].receiver,result[0].email,result[0].status)
                 res.send(data);
                 // var boardws = webSockets['01'] //check if there is reciever connection
@@ -168,7 +255,7 @@ app.post('/login', (req, res) => {
             
         });
     });
-    console.log(req.body)
+    
 });
 
     
@@ -211,7 +298,7 @@ wss.on('connection', function (ws, req)  {
                     var boardws = webSockets[data.receiver] //check if there is reciever connection
                     var MongoClient = require('mongodb').MongoClient;
                         var url = "mongodb+srv://Hin:tony1007@cluster0.1a24r.mongodb.net/test";
-                        
+                    
                         MongoClient.connect(url, function(err, db) {
                             if (err) throw err;
                             var dbo = db.db("Hin");
