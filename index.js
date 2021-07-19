@@ -319,9 +319,6 @@ wss.on('connection', function (ws, req)  {
                         });
                         });
                     }); //check if there is reciever connection
-                    var MongoClient = require('mongodb').MongoClient;
-                        var url = "mongodb+srv://Hin:tony1007@cluster0.1a24r.mongodb.net/test";
-                    
                         MongoClient.connect(url, function(err, db) {
                             if (err) throw err;
                             var dbo = db.db("Hin");
@@ -332,6 +329,113 @@ wss.on('connection', function (ws, req)  {
                                 db.close();
                             });
                         });
+                        MongoClient.connect(url, function(err, db) {
+                            if (err) throw err;
+                            var dbo = db.db("Hin");
+                            var whereStr = {"receiver" : data.receiver};
+                            if (boardws){
+                                var myobj = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:0}; 
+                            dbo.collection("lastmessage").find(whereStr).toArray(function(err, result) {
+                                if (result.length ==0 ||err){
+                                    dbo.collection("lastmessage").insertOne(myobj, function(err, res) {
+                                        if (err) throw err;
+                                        var cmdd='add';
+                                        console.log("文档插入成功123");
+                                        if (boardws){
+                                            var cdata = "{'cmd':'" + cmdd + "','sendid':'"+data.userid+"','date':'"+datee+"', 'receiver':'"+data.receiver+"','msgtext':'"+data.msgtext+"'}";
+                                            boardws.send(cdata); //send message to reciever
+                                            ws.send(data.cmd + ":success");
+          
+                                        }
+                                        db.close();
+                                    });
+                                }
+                                else{
+                                    console.log(result[0].unread);
+                                    dbo.collection("lastmessage").deleteOne(whereStr, function(err, obj) {
+                                        if (err) throw err;
+                                        console.log("文档删除成功");
+                                        db.close();
+                                    });
+                                    var obj2 = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:0}; 
+                                    if (boardws){
+                                         obj2 = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:0}; 
+                                    }
+                                    else{
+                                         obj2 = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:result[0].unread+1}; 
+                                    }
+                                    dbo.collection("lastmessage").insertOne(obj2, function(err, res) {
+                                        if (err) throw err;
+                                        var cmdd='update';
+                                        console.log("文档插入成功123");
+                                        if (boardws){
+                                            var cdata = "{'cmd':'" + cmdd + "','sendid':'"+data.userid+"','date':'"+datee+"', 'receiver':'"+data.receiver+"','msgtext':'"+data.msgtext+"'}";
+                                            boardws.send(cdata); //send message to reciever
+                                            ws.send(data.cmd + ":success");
+                                            
+                                        }
+                                        db.close();
+                                    });
+                    
+                                }
+                                
+                            });
+                            }
+                            else{
+                                var myobj = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:1};
+        
+                            dbo.collection("lastmessage").find(whereStr).toArray(function(err, result) {
+                                if (result.length ==0 ||err){
+                                    dbo.collection("lastmessage").insertOne(myobj, function(err, res) {
+                                        if (err) throw err;
+                                        var cmdd='add';
+                                        console.log("文档插入成功123");
+                                        if (boardws){
+                                            var cdata = "{'cmd':'" + cmdd + "','sendid':'"+data.userid+"','date':'"+datee+"', 'receiver':'"+data.receiver+"','msgtext':'"+data.msgtext+"'}";
+                                            boardws.send(cdata); //send message to reciever
+                                            ws.send(data.cmd + ":success");
+          
+                                        }
+                                        db.close();
+                                    });
+                                }
+                                else{
+                                    console.log(result[0].unread);
+                                    dbo.collection("lastmessage").deleteOne(whereStr, function(err, obj) {
+                                        if (err) throw err;
+                                        console.log("文档删除成功");
+                                        db.close();
+                                    });
+                                    var obj2 = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:0}; 
+                                    if (boardws){
+                                         obj2 = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:0}; 
+                                    }
+                                    else{
+                                         obj2 = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:result[0].unread+1}; 
+                                    }
+                                    dbo.collection("lastmessage").insertOne(obj2, function(err, res) {
+                                        if (err) throw err;
+                                        var cmdd='update';
+                                        console.log("文档插入成功123");
+                                        if (boardws){
+                                            var cdata = "{'cmd':'" + cmdd + "','sendid':'"+data.userid+"','date':'"+datee+"', 'receiver':'"+data.receiver+"','msgtext':'"+data.msgtext+"'}";
+                                            boardws.send(cdata); //send message to reciever
+                                            ws.send(data.cmd + ":success");
+                                            
+                                        }
+                                        db.close();
+                                    });
+                    
+                                }
+                                
+                            });
+                            }
+                            
+                            
+                            
+                        });
+
+
                        
 
                   
