@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'conversation.dart';
-import 'friend.dart';
+import 'group.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'profile.dart';
 class content extends StatefulWidget {
   @override
-  content({ required this.id,required this.status}) ;
+  content({ required this.id,required this.status,required this.indexx}) ;
   final String id;
   final String status;
+   int indexx;
   _contentState createState() => _contentState();
 }
 
 class _contentState extends State<content> {
-  int _selectedIndex = 0;
-
   List<Widget> _widgetOptions() =>[
     New(id: widget.id),
     Friend(id: widget.id),
@@ -22,7 +21,7 @@ class _contentState extends State<content> {
   ];
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index;
+      widget.indexx = index;
     });
     print(widget.id);
   }
@@ -30,14 +29,14 @@ class _contentState extends State<content> {
   Widget build(BuildContext context) {
     final  List<Widget> widdget = _widgetOptions();
     return Scaffold(
-      body: widdget.elementAt(_selectedIndex),
+      body: widdget.elementAt(widget.indexx),
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.deepPurple,
         unselectedItemColor: Colors.grey.shade600,
         selectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
         unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
         type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
+        currentIndex: widget.indexx,
         onTap: _onItemTapped,
         items: [
           BottomNavigationBarItem(

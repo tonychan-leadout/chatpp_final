@@ -42,7 +42,7 @@ Future login(context,email,password) async {
             TextButton(
               onPressed: () => Navigator.push(
                   context, MaterialPageRoute(
-                builder: (context) => content(id: jsonDecode(response.body)[0],sendid: jsonDecode(response.body)[1],status: jsonDecode(response.body)[3]),
+                builder: (context) => content(id: jsonDecode(response.body)[0],status: jsonDecode(response.body)[3],indexx: 0,),
 
               )
               ),
@@ -89,15 +89,37 @@ Future register(context,password,email,name) async {
     ),
   );
 }
+Future addgroupchat(context,name,member,group) async {
+  final url = Uri.parse(_localhostss());
+  //Response response = await get(url);
+  //print(response.body);
+  int receiver= 02;
+  final json = '{"creator":"$name","member": "$member","groupname" :"$group"}';
+  final response = await post(Uri.parse(_localhostssss()), headers: <String, String>{
+    'Content-Type': 'application/json; charset=UTF-8',
+  }, body: json);
+  // print('Status code: ${response.statusCode}');
+  print(response.body);
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (context) => content(id:name ,status: 'Hello i am ok',indexx: 1,)),
+  );
+}
+String _localhostssss() {
+  if (Platform.isAndroid)
+    return 'http://35.220.163.89:7878/group';
+  else // for iOS simulator
+    return 'http://35.220.163.89:7878/group';
+}
 String _localhost() {
   if (Platform.isAndroid)
-    return 'http://192.168.1.26:7878/login';
+    return 'http://35.220.163.89:7878/login';
   else // for iOS simulator
-    return 'http://192.168.1.26:7878/login';
+    return 'http://35.220.163.89:7878/login';
 }
 String _localhostss() {
   if (Platform.isAndroid)
-    return 'http://192.168.1.26:7878/register';
+    return 'http://35.220.163.89:7878/register';
   else // for iOS simulator
-    return 'http://192.168.1.26:7878/register';
+    return 'http://35.220.163.89:7878/register';
 }

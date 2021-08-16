@@ -59,7 +59,7 @@ class ChatPageState extends State<ChatPage>{
 
   channelconnect(){ //function to connect
     try{
-      channel = IOWebSocketChannel.connect("ws://35.220.163.89:6060/${widget.id}"); //channel IP : Port
+      channel = IOWebSocketChannel.connect("ws://35.220.163.89:6060/${widget.sendid}:${widget.id}"); //channel IP : Port
       channel.stream.listen((message) {
         var timesss;
         int hourr= DateTime.now().hour;
@@ -81,24 +81,26 @@ class ChatPageState extends State<ChatPage>{
         else{
           timesss='am';
         }
-        // print(message);
+        print(message);
         setState(() {
           if(message == "connected"){
             connected = true;
             setState(() { });
+            print("Connection establised.");
           }else if(message == "send:success"){
-            print("Message send success");
             setState(() {
               msgtext.text = "";
             });
           }else if(message == "send:error"){
             print("Message send error");
-          }else if (message.substring(0, 6) == "{'cmd'") {
+          }else if (message.substring(0, 18) == "{'cmd':'groupsend'") {
+            print("Message data:");
             message = message.replaceAll(RegExp("'"), '"');
             var jsondata = json.decode(message);
-            print('hi${jsondata["userid"]}');
-            print('hik${widget.sendid}');
-            if(jsondata["userid"] == widget.sendid){
+            // print('ll${jsondata["sendid"]}');
+            // print('ss${widget.sendid}');
+            // print(widget.id);
+            if(jsondata["sendid"] == widget.sendid && jsondata['userid'] !=widget.id){
               setState(() {
                 if(msglist.length ==0){
                   msglist.add(MessageData( //on message recieve, add data to model
@@ -176,7 +178,8 @@ class ChatPageState extends State<ChatPage>{
     var day = DateTime.now().day.toString();
     int hourr= DateTime.now().hour.toInt();
     if(connected == true){
-      String msg = "{'auth':'$auth','cmd':'send','userid':'$id', 'msgtext':'$sendmsg','receiver':'$sendid'}";
+      print(hourr.runtimeType);
+      String msg = "{'auth':'$auth','cmd':'groupsend','userid':'$id', 'msgtext':'$sendmsg','receiver':'$sendid'}";
       setState(() {
 
         if(min.length ==1){
@@ -191,6 +194,7 @@ class ChatPageState extends State<ChatPage>{
         if(day.length ==1){
           day="0$day";
         }
+        print('$month-$day-$hour:${min}am');
         msgtext.text = "";
 
         // if(hourr > 12){
@@ -292,7 +296,7 @@ class ChatPageState extends State<ChatPage>{
     // print('Status code: ${response.statusCode}');
     List<dynamic>dayss=[];
     List <dynamic>data= jsonDecode(response.body);
-    // print( jsonDecode(response.body)[0]);
+    print( jsonDecode(response.body)[0]);
     data.forEach((element) {
       if(month.length==1){
         month='0'+month;
@@ -455,9 +459,9 @@ class ChatPageState extends State<ChatPage>{
   }
   String _localhostss() {
     if (Platform.isAndroid)
-      return 'http://35.220.163.89:7878/getmsg';
+      return 'http://35.220.163.89:7878/getgroupmsg';
     else // for iOS simulator
-      return 'http://35.220.163.89:7878/getmsg';
+      return 'http://35.220.163.89:7878/getgroupmsg';
   }
   String _localhost() {
     if (Platform.isAndroid)
@@ -498,8 +502,8 @@ class ChatPageState extends State<ChatPage>{
               SizedBox(width: 10,),
               Column(
                   children: connected?
-                  <Widget>[ SizedBox(height: 4,),Text("${widget.sendid} ",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 19),),SizedBox(height: 6,),Text('online',style: TextStyle(fontSize: 13),)]
-                      :<Widget>[ SizedBox(height: 4,),Text("${widget.sendid} ",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 19),),SizedBox(height: 6,),Text('offline',style: TextStyle(fontSize: 13),)]
+                  <Widget>[ SizedBox(height: 4,),Text("${widget.sendid} ",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 19),),SizedBox(height: 6,)]
+                      :<Widget>[ SizedBox(height: 4,),Text("${widget.sendid} ",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 19),),SizedBox(height: 6,)]
               ),
             ],
           ),
@@ -556,7 +560,7 @@ class ChatPageState extends State<ChatPage>{
                                                 Column(
                                                   children: [
                                                     Text("${widget.unread.toString().toWord(
-                                                lang: NumStrLanguage.English)} unread messages")
+                                                        lang: NumStrLanguage.English)} unread messages")
                                                   ],
                                                 )
                                             ),
@@ -594,13 +598,13 @@ class ChatPageState extends State<ChatPage>{
                                                     child: Column(
                                                       crossAxisAlignment: CrossAxisAlignment.start,
                                                       children: [
-
-                                                        /*Container(
-                                                      child:Text(onemsg.isme?"ID: ME":"ID: " + onemsg.userid)
-                                                  ),*/
-
+                                                        if(onemsg.userid != widget.id)
                                                         Container(
-                                                          margin: EdgeInsets.only(top:10,bottom:10),
+                                                          margin: EdgeInsets.only(top:2,bottom:2),
+                                                          child: Text( onemsg.userid, style: TextStyle(fontSize: 15,color: Colors.lightBlueAccent)),
+                                                        ),
+                                                        Container(
+                                                          margin: EdgeInsets.only(top:5,bottom:5),
                                                           child: Text( onemsg.msgtext, style: TextStyle(fontSize: 17,color: Colors.white)),
                                                         ),
                                                         Row(
@@ -712,6 +716,6 @@ class MessageData{ //message data model
   bool istoday;
   bool today;
   bool ismessageread;
-  MessageData({required this.msgtext, required this.userid, required this.isme,required this.sendid, required this.time,required this.istoday,required this.today,required this.ismessageread});
+  MessageData({required this.msgtext, required this.userid, required this.isme,required this.sendid, required this.time,required this.istoday,required this.today,required this.ismessageread,});
 
 }

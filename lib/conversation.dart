@@ -118,7 +118,7 @@ class _ChatPageState extends State<New> {
   }
   channelconnect(){ //function to connect
     try{
-      channel = IOWebSocketChannel.connect("ws://192.168.0.137:6060/${widget.id}"); //channel IP : Port
+      channel = IOWebSocketChannel.connect("ws://35.220.163.89:6060/${widget.id}"); //channel IP : Port
       channel.stream.listen((message) {
         print(message);
         setState(() {
@@ -144,33 +144,33 @@ class _ChatPageState extends State<New> {
               });
             }
             if(jsondata['cmd'] == 'update'){
-                Friends.forEach((element) {
-                    if (element.name == jsondata['sendid'] ) {
-                      setState(() {
-                        int count=element.imageURL;
-                        Friends.removeWhere((element) => element.name ==jsondata['sendid'] );
-                        if(jsondata['sendid'] ==widget.id){
-                          Friends.insert(0, ChatUsers(name: jsondata['receiver'], messageText: ('✓✓ ${jsondata['msgtext']}'), imageURL: count+1, time: jsondata['date'].substring(11,16)));
-                        }
-                        else{
-                          Friends.insert(0, ChatUsers(name: jsondata['sendid'], messageText: jsondata['msgtext'], imageURL: count+1, time: jsondata['date'].substring(11,16)));
-                        }
+              Friends.forEach((element) {
+                if (element.name == jsondata['sendid'] ) {
+                  setState(() {
+                    int count=element.imageURL;
+                    Friends.removeWhere((element) => element.name ==jsondata['sendid'] );
+                    if(jsondata['sendid'] ==widget.id){
+                      Friends.insert(0, ChatUsers(name: jsondata['receiver'], messageText: ('✓✓ ${jsondata['msgtext']}'), imageURL: count+1, time: jsondata['date'].substring(11,16)));
+                    }
+                    else{
+                      Friends.insert(0, ChatUsers(name: jsondata['sendid'], messageText: jsondata['msgtext'], imageURL: count+1, time: jsondata['date'].substring(11,16)));
+                    }
 
-                      });
+                  });
+                }
+                if ( element.name == jsondata['receiver']) {
+                  int count=element.imageURL;
+                  setState(() {
+                    Friends.removeWhere((element) => element.name ==jsondata['receiver'] );
+                    if(jsondata['sendid'] ==widget.id){
+                      Friends.insert(0, ChatUsers(name: jsondata['receiver'], messageText: ('✓✓ ${jsondata['msgtext']}'), imageURL: count+1, time: jsondata['date'].substring(11,16)));
                     }
-                    if ( element.name == jsondata['receiver']) {
-                      int count=element.imageURL;
-                      setState(() {
-                        Friends.removeWhere((element) => element.name ==jsondata['receiver'] );
-                        if(jsondata['sendid'] ==widget.id){
-                          Friends.insert(0, ChatUsers(name: jsondata['receiver'], messageText: ('✓✓ ${jsondata['msgtext']}'), imageURL: count+1, time: jsondata['date'].substring(11,16)));
-                        }
-                        else{
-                          Friends.insert(0, ChatUsers(name: jsondata['sendid'], messageText: jsondata['msgtext'], imageURL: count+1, time: jsondata['date'].substring(11,16)));
-                        }
-                        counter=counter+1;
-                      });
+                    else{
+                      Friends.insert(0, ChatUsers(name: jsondata['sendid'], messageText: jsondata['msgtext'], imageURL: count+1, time: jsondata['date'].substring(11,16)));
                     }
+                    counter=counter+1;
+                  });
+                }
               });
             }
           }
@@ -240,8 +240,8 @@ class _ChatPageState extends State<New> {
   }
   String _localhostss() {
     if (Platform.isAndroid)
-      return 'http://192.168.0.137:7878/getuser';
+      return 'http://35.220.163.89:7878/getuser';
     else // for iOS simulator
-      return 'http://192.168.0.137:7878/getuser';
+      return 'http://35.220.163.89:7878/getuser';
   }
 }

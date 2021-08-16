@@ -122,7 +122,8 @@ class _LoginDemoState extends State<Register> {
               child: FlatButton(
                 onPressed: () {
                   // register(password.text,email.text,name.text,'02');
-                  register(password.text,email.text,name.text);
+                  register(context,password.text,email.text,name.text);
+                  // Navigator.pushReplacementNamed(context, '/');
                 },
                 child: Text(
                   'Submit',

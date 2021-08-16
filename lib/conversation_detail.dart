@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'chat.dart';
 class ConversationList extends StatefulWidget{
@@ -21,7 +20,7 @@ class _ConversationListState extends State<ConversationList> {
         print(widget.name);
         Navigator.push(
             context, MaterialPageRoute(
-          builder: (context) => ChatPage(id: widget.id, sendid: widget.name,),
+          builder: (context) => ChatPage(id: widget.id, sendid: widget.name,unread: widget.imageUrl,),
 
         )
         );
@@ -73,17 +72,17 @@ class _ConversationListState extends State<ConversationList> {
                   height: 10,
                 ),
                 if(widget.imageUrl >0)
-                Container(
-                  padding: EdgeInsets.only(left: 8,right: 8,top: 2,bottom: 2),
-                  height: 20,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(50),
-                    color: Colors.greenAccent,
-                  ),
-                  child: Text(widget.imageUrl.toString(), style: TextStyle(fontSize: 12,
-                      fontWeight: widget.isMessageRead ? FontWeight.bold : FontWeight
-                          .normal),),
-                )
+                  Container(
+                    padding: EdgeInsets.only(left: 8,right: 8,top: 2,bottom: 2),
+                    height: 20,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(50),
+                      color: Colors.greenAccent,
+                    ),
+                    child: Text(widget.imageUrl.toString(), style: TextStyle(fontSize: 12,
+                        fontWeight: widget.isMessageRead ? FontWeight.bold : FontWeight
+                            .normal),),
+                  )
 
               ],
             )
