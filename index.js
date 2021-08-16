@@ -301,10 +301,16 @@ wss.on('connection', function (ws, req)  {
                         var dbo = db.db("Hin");
                         var whereStr = {"groupname":data.receiver};  // 查询条件
                         dbo.collection("Group").find(whereStr).toArray(function(err, result) {
-                           console.log(result[0].member);
-                        result[0].member.forEach(element => {
+                           var ltt=result[0].member.replace('[','');
+                           ltt=ltt.replace(']','');
+                           ltt=ltt.replace(/\s/g, '');
+                           ltt=ltt.split(',');
+                           console.log(ltt);
+                        ltt.forEach(element => {
                             if (element != data.userid){
-                                boardws=webSockets[element];
+                                var stt= data.receiver+":"+element;
+                                boardws=webSockets[stt];
+                                console.log(stt);
                                 if(boardws){
                                     var cdata = "{'cmd':'" + data.cmd + "','userid':'"+data.userid+"', 'sendid':'"+data.receiver+"','msgtext':'"+data.msgtext+"'}";
                                     boardws.send(cdata); //send message to reciever
@@ -332,116 +338,16 @@ wss.on('connection', function (ws, req)  {
                         MongoClient.connect(url, function(err, db) {
                             if (err) throw err;
                             var dbo = db.db("Hin");
-                            var whereStr = {"receiver" : data.receiver};
-                            if (boardws){
-                                var myobj = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:0}; 
-                            dbo.collection("lastmessage").find(whereStr).toArray(function(err, result) {
-                                if (result.length ==0 ||err){
-                                    dbo.collection("lastmessage").insertOne(myobj, function(err, res) {
-                                        if (err) throw err;
-                                        var cmdd='add';
-                                        console.log("文档插入成功123");
-                                        if (boardws){
-                                            var cdata = "{'cmd':'" + cmdd + "','sendid':'"+data.userid+"','date':'"+datee+"', 'receiver':'"+data.receiver+"','msgtext':'"+data.msgtext+"'}";
-                                            boardws.send(cdata); //send message to reciever
-                                            ws.send(data.cmd + ":success");
-          
-                                        }
-                                        db.close();
-                                    });
-                                }
-                                else{
-                                    console.log(result[0].unread);
-                                    dbo.collection("lastmessage").deleteOne(whereStr, function(err, obj) {
-                                        if (err) throw err;
-                                        console.log("文档删除成功");
-                                        db.close();
-                                    });
-                                    var obj2 = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:0}; 
-                                    if (boardws){
-                                         obj2 = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:0}; 
-                                    }
-                                    else{
-                                         obj2 = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:result[0].unread+1}; 
-                                    }
-                                    dbo.collection("lastmessage").insertOne(obj2, function(err, res) {
-                                        if (err) throw err;
-                                        var cmdd='update';
-                                        console.log("文档插入成功123");
-                                        if (boardws){
-                                            var cdata = "{'cmd':'" + cmdd + "','sendid':'"+data.userid+"','date':'"+datee+"', 'receiver':'"+data.receiver+"','msgtext':'"+data.msgtext+"'}";
-                                            boardws.send(cdata); //send message to reciever
-                                            ws.send(data.cmd + ":success");
-                                            
-                                        }
-                                        db.close();
-                                    });
-                    
-                                }
-                                
+                            var whereStr = {"groupname":data.receiver};  // 查询条件
+                            var updateStr = {$set: { "lastemessage" : data.msgtext }};
+                            dbo.collection("Group").updateOne(whereStr, updateStr, function(err, res) {
+                                if (err) throw err;
+                                console.log("文档更新成功");
+                                db.close();
                             });
-                            }
-                            else{
-                                var myobj = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:1};
-        
-                            dbo.collection("lastmessage").find(whereStr).toArray(function(err, result) {
-                                if (result.length ==0 ||err){
-                                    dbo.collection("lastmessage").insertOne(myobj, function(err, res) {
-                                        if (err) throw err;
-                                        var cmdd='add';
-                                        console.log("文档插入成功123");
-                                        if (boardws){
-                                            var cdata = "{'cmd':'" + cmdd + "','sendid':'"+data.userid+"','date':'"+datee+"', 'receiver':'"+data.receiver+"','msgtext':'"+data.msgtext+"'}";
-                                            boardws.send(cdata); //send message to reciever
-                                            ws.send(data.cmd + ":success");
-          
-                                        }
-                                        db.close();
-                                    });
-                                }
-                                else{
-                                    console.log(result[0].unread);
-                                    dbo.collection("lastmessage").deleteOne(whereStr, function(err, obj) {
-                                        if (err) throw err;
-                                        console.log("文档删除成功");
-                                        db.close();
-                                    });
-                                    var obj2 = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:0}; 
-                                    if (boardws){
-                                         obj2 = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:0}; 
-                                    }
-                                    else{
-                                         obj2 = { sender: data.userid, receiver: data.receiver, message: data.msgtext ,date:datee,unread:result[0].unread+1}; 
-                                    }
-                                    dbo.collection("lastmessage").insertOne(obj2, function(err, res) {
-                                        if (err) throw err;
-                                        var cmdd='update';
-                                        console.log("文档插入成功123");
-                                        if (boardws){
-                                            var cdata = "{'cmd':'" + cmdd + "','sendid':'"+data.userid+"','date':'"+datee+"', 'receiver':'"+data.receiver+"','msgtext':'"+data.msgtext+"'}";
-                                            boardws.send(cdata); //send message to reciever
-                                            ws.send(data.cmd + ":success");
-                                            
-                                        }
-                                        db.close();
-                                    });
-                    
-                                }
-                                
-                            });
-                            }
-                            
-                            
-                            
-                        });
-
-
-                       
-
-                  
+                        });        
                 }
                 if(data.cmd == 'send'){ 
-                    
                     var datee= (year + "-" + month + "-" + day + " " + hours + ":" + minutes);
                     var boardws = webSockets[data.receiver] //check if there is reciever connection
                     var MongoClient = require('mongodb').MongoClient;
